@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://t72j31bvhxh1"]
+
+[ext_resource type="Script" path="res://Inventory/Scripts/ItemSlot.cs" id="1_s0yvl"]
+
+[node name="ItemSlot" type="Panel"]
+custom_minimum_size = Vector2(64, 64)
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_s0yvl")

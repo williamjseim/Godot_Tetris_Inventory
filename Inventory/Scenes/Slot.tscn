@@ -1,0 +1,18 @@
+[gd_scene load_steps=3 format=3 uid="uid://bsbjyg43fnqud"]
+
+[ext_resource type="Script" path="res://Inventory/Scripts/Slot.cs" id="1_61nwv"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mmwws"]
+bg_color = Color(1, 1, 1, 0)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_blend = true
+
+[node name="Slot" type="Panel"]
+custom_minimum_size = Vector2(64, 64)
+offset_right = 64.0
+offset_bottom = 64.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_mmwws")
+script = ExtResource("1_61nwv")

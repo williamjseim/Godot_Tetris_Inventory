@@ -1,0 +1,43 @@
+[gd_scene load_steps=4 format=3 uid="uid://ikdk11wfsbba"]
+
+[ext_resource type="Script" path="res://Inventory/InventoryManager.cs" id="1_p7igv"]
+[ext_resource type="PackedScene" uid="uid://bsbjyg43fnqud" path="res://Inventory/Scenes/Slot.tscn" id="2_lox4c"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_x2j7t"]
+bg_color = Color(0.258824, 0.258824, 0.258824, 1)
+
+[node name="Inventory" type="Panel" node_paths=PackedStringArray("grid")]
+custom_minimum_size = Vector2(1600, 900)
+anchors_preset = -1
+anchor_right = 0.875
+anchor_bottom = 0.889
+offset_right = 200.0
+offset_bottom = 99.9
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_x2j7t")
+script = ExtResource("1_p7igv")
+inventorySize = Vector2i(10, 20)
+grid = NodePath("ScrollContainer/MarginContainer/GridContainer")
+slotScene = ExtResource("2_lox4c")
+
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
+custom_minimum_size = Vector2(650, 100)
+layout_mode = 0
+offset_left = 950.0
+offset_right = 1600.0
+offset_bottom = 900.0
+
+[node name="MarginContainer" type="MarginContainer" parent="ScrollContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
+
+[node name="GridContainer" type="GridContainer" parent="ScrollContainer/MarginContainer"]
+custom_minimum_size = Vector2(640, 100)
+layout_mode = 2
+theme_override_constants/h_separation = 0
+theme_override_constants/v_separation = 0
+columns = 10

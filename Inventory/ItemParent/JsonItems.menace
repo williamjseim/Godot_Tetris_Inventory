@@ -1,0 +1,15 @@
+[
+  {
+    "$type": "GearItem, Tetris_Inventory",
+    "Gear": 0,
+    "Name": "Basic rod",
+    "Id": "BasicRod",
+    "SpritePath": "res://Inventory/Sprites/FishingRod.tres",
+    "StackSize": 999,
+    "ItemSize": {
+      "$type": "Godot.Vector2I, GodotSharp",
+      "X": 1,
+      "Y": 4
+    }
+  },
+]
