@@ -84,10 +84,9 @@ public partial class InventoryManager : ContainerManager
                 if(!this.Slots[X,Y].IsEmpty){
                     return false;
                 }
-                return true;
             }
         }
-        return false;
+        return true;
     }
 
     public bool PlaceItem(BaseItem item, int amount, Vector2I pos){

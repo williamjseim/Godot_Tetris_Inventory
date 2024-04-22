@@ -38,7 +38,7 @@ public partial class Slot : Panel
 
 	protected virtual void AssignEvents(){
 		this.GuiInput += this.Input;
-		this.MouseEntered += ()=>{ MouseEnter?.Invoke(this.GridPosition); };
+		this.MouseEntered += ()=>{ GD.Print("asdwawd"); MouseEnter?.Invoke(this.GridPosition); };
 		this.MouseExited += ()=>{ MouseExit?.Invoke(this.GridPosition); };
 	}
 

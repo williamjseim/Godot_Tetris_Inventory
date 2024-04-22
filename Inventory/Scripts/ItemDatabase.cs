@@ -57,7 +57,7 @@ public class ItemDatabase
         // }
 
         BaseItem[] array;
-        using(StreamReader sr = new StreamReader(@"C:\Users\zbcwise\Documents\GitHub\Godot_Tetris_Inventory\Inventory\ItemParent\JsonItems.menace"))
+        using(StreamReader sr = new StreamReader(@".\Inventory\ItemParent\JsonItems.menace"))
         using(JsonReader reader = new JsonTextReader(sr)){
             array = serializer.Deserialize<BaseItem[]>(reader);
         }

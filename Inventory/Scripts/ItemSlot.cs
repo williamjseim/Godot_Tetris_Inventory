@@ -2,6 +2,13 @@ using System;
 using Godot;
 
 public partial class ItemSlot : Panel{
+
+    public ItemSlot()
+    {
+        this.MouseFilter = MouseFilterEnum.Pass;
+        this.AddThemeStyleboxOverride("panel", itemsprite);
+    }
+
     private Vector2I _gridPosition;
     public Vector2I GridPosition
     {
@@ -32,8 +39,6 @@ public partial class ItemSlot : Panel{
     {
         base._Ready();
         this.GuiInput += this.Input;
-        this.AddThemeStyleboxOverride("panel", itemsprite);
-        this.MouseFilter = MouseFilterEnum.Pass;
     }
 
     bool isDragged = false;
@@ -47,15 +52,18 @@ public partial class ItemSlot : Panel{
             this.GlobalPosition = this.GetGlobalMousePosition() - this.Size / 2;
         }
     }
+
     protected void Input(InputEvent @event){
         if(@event is InputEventMouse mouse){
             if(mouse.ButtonMask == MouseButtonMask.Left && mouse.IsPressed()){
                 if(isDragged){
                     isDragged = false;
                     DragEnd?.Invoke(this);
+                    TopLevel = true;
                     return;
                 }
                 isDragged = true;
+                TopLevel = true;
                 DragBegin?.Invoke(this);
                 // this.MouseFilter = MouseFilterEnum.Ignore;
             }
