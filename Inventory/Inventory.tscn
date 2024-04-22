@@ -6,7 +6,7 @@
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_x2j7t"]
 bg_color = Color(0.258824, 0.258824, 0.258824, 1)
 
-[node name="Inventory" type="Panel" node_paths=PackedStringArray("grid")]
+[node name="Inventory" type="Panel" node_paths=PackedStringArray("grid", "container")]
 custom_minimum_size = Vector2(1600, 900)
 anchors_preset = -1
 anchor_right = 0.875
@@ -19,6 +19,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_x2j7t")
 script = ExtResource("1_p7igv")
 inventorySize = Vector2i(10, 20)
 grid = NodePath("ScrollContainer/MarginContainer/GridContainer")
+container = NodePath("ScrollContainer/MarginContainer/Container")
 slotScene = ExtResource("2_lox4c")
 
 [node name="ScrollContainer" type="ScrollContainer" parent="."]
@@ -41,3 +42,7 @@ layout_mode = 2
 theme_override_constants/h_separation = 0
 theme_override_constants/v_separation = 0
 columns = 10
+
+[node name="Container" type="Control" parent="ScrollContainer/MarginContainer"]
+layout_mode = 2
+mouse_filter = 2

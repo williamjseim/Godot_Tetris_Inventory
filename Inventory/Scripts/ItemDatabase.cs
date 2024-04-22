@@ -57,7 +57,7 @@ public class ItemDatabase
         // }
 
         BaseItem[] array;
-        using(StreamReader sr = new StreamReader(@"F:\GitHub\Godot_Tetris_Inventory\Inventory\ItemParent\JsonItems.menace"))
+        using(StreamReader sr = new StreamReader(@"C:\Users\zbcwise\Documents\GitHub\Godot_Tetris_Inventory\Inventory\ItemParent\JsonItems.menace"))
         using(JsonReader reader = new JsonTextReader(sr)){
             array = serializer.Deserialize<BaseItem[]>(reader);
         }
@@ -69,7 +69,7 @@ public class ItemDatabase
         {
             GD.Print(item.Id);
             if(item.Id != string.Empty && item.Id != BaseItem.Empty){
-                this.Items.Add(item.Id, item);
+                this.Items.TryAdd(item.Id, item);
                 continue;
             }
             string itemId = $"{itemParent}:{item.Name}";

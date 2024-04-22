@@ -5,6 +5,10 @@ using System.Text.Json.Serialization;
 [Serializable]
 public class ItemHolder
 {
+  public event Action ObjectMoved;
+  public void ItemRemoved(){
+    ObjectMoved?.Invoke();
+  }
   public ItemHolder(){ Item = null; Amount = 0; }
 
   public ItemHolder(BaseItem item, int amount)
@@ -56,10 +60,16 @@ public class ItemHolder
   }
 
   public static bool operator == (ItemHolder a, ItemHolder b){
+    if(b is null){
+      return false;
+    }
     return a.Equals(b);
   }
 
   public static bool operator != ( ItemHolder a, ItemHolder b){
+    if(b is null){
+      return true;
+    }
     return !a.Equals(b);
   }
 
