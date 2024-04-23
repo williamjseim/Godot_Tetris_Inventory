@@ -31,8 +31,7 @@ public partial class InventoryManager : ContainerManager
         InsertItem(ItemDatabase.Instance.GetItem($"Fish"));
         InsertItem(ItemDatabase.Instance.GetItem($"InternalStorage"));
     }
-
-
+    
     Slot focusedSlot = null;
     ItemSlot _itemSlotBeingDragged;
 
