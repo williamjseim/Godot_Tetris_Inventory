@@ -15,9 +15,6 @@ public partial class Slot : Panel
 	/// </summary>
 	public ItemSlot ItemSlot { get { return this._itemSlot; } set{
 		this._itemSlot = value;
-		if(value is null){
-
-		}
 	}}
 	
 	protected StyleBoxFlat stylebox = new(){BgColor = Colors.Transparent, BorderWidthBottom = 1, BorderWidthLeft = 1, BorderWidthRight = 1, BorderWidthTop = 1};
@@ -27,8 +24,9 @@ public partial class Slot : Panel
 		}
 	}
 	
-	public static event Action<Vector2I> MouseEnter;
-	public static event Action<Vector2I> MouseExit;
+	public static event Action<Slot> Clicked;
+	public static event Action<Slot> MouseEnter;
+	public static event Action<Slot> MouseExit;
 
 	public override void _Ready()
 	{
@@ -38,19 +36,28 @@ public partial class Slot : Panel
 
 	protected virtual void AssignEvents(){
 		this.GuiInput += this.Input;
-		this.MouseEntered += ()=>{ GD.Print("asdwawd"); MouseEnter?.Invoke(this.GridPosition); };
-		this.MouseExited += ()=>{ MouseExit?.Invoke(this.GridPosition); };
+		this.MouseEntered += ()=>{ MouseEnter?.Invoke(this); };
+		this.MouseExited += ()=>{ MouseExit?.Invoke(this); };
 	}
 
 	//communicates to the InventoryManager that a slot was clicked
 	public virtual void Input(InputEvent input){
-		if(input is InputEventMouseButton mouse && mouse.IsPressed()){}
+		if(input is InputEventMouseButton mouse && mouse.IsPressed()){
+			if(mouse.ButtonIndex == MouseButton.Left){
+				if(ItemSlot != null){
+					ItemSlot.Input(input);
+				}
+				else{
+					Clicked?.Invoke(this);
+				}
+			}
+		}
 	}
 
-	public void HighLight(){
-		this.stylebox.BgColor = Colors.Green;
+	public void HighLight(Color? color = null){
+		this.stylebox.BgColor = color == null ? Colors.Green : (Color)color;
 	}
-	public void DeHighLight(){
-		this.stylebox.BgColor = Colors.Transparent;
+	public void DeHighLight(Color? color = null){
+		this.stylebox.BgColor = color == null ? Colors.Transparent : (Color)color;
 	}
 }

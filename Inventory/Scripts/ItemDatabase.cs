@@ -18,7 +18,6 @@ public class ItemDatabase
 
     public ItemDatabase()
     {
-        LoadItems();
     }
     
     public Dictionary<string, BaseItem> Items = new();
@@ -69,8 +68,11 @@ public class ItemDatabase
         {
             GD.Print(item.Id);
             if(item.Id != string.Empty && item.Id != BaseItem.Empty){
-                this.Items.TryAdd(item.Id, item);
-                continue;
+                try{
+                    this.Items.Add(item.Id, item);
+                    continue;
+                }
+                catch(Exception ex){ GD.PrintErr(ex); }
             }
             string itemId = $"{itemParent}:{item.Name}";
             if(item.Id == BaseItem.Empty || item.Id == ""){
