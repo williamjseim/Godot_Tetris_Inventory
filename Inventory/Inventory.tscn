@@ -1,51 +1,35 @@
-[gd_scene load_steps=5 format=3 uid="uid://ikdk11wfsbba"]
+[gd_scene load_steps=3 format=3 uid="uid://ikdk11wfsbba"]
 
 [ext_resource type="Script" path="res://Inventory/InventoryManager.cs" id="1_p7igv"]
-[ext_resource type="PackedScene" uid="uid://t72j31bvhxh1" path="res://Inventory/Sprites/ItemSlot.tscn" id="2_lnl3v"]
-[ext_resource type="PackedScene" uid="uid://bsbjyg43fnqud" path="res://Inventory/Scenes/Slot.tscn" id="2_lox4c"]
+[ext_resource type="Script" path="res://Inventory/Scripts/SlotContainer.cs" id="1_yp5al"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_x2j7t"]
-bg_color = Color(0.258824, 0.258824, 0.258824, 1)
-
-[node name="Inventory" type="Panel" node_paths=PackedStringArray("grid", "container")]
+[node name="Inventory" type="Panel" node_paths=PackedStringArray("slotContainer")]
 custom_minimum_size = Vector2(1600, 900)
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_x2j7t")
 script = ExtResource("1_p7igv")
-itemslotScene = ExtResource("2_lnl3v")
-inventorySize = Vector2i(10, 20)
-grid = NodePath("ScrollContainer/MarginContainer/GridContainer")
-container = NodePath("ScrollContainer/MarginContainer/Container")
-slotScene = ExtResource("2_lox4c")
+slotContainer = NodePath("ScrollContainer/MarginContainer/SlotGrid")
 
 [node name="ScrollContainer" type="ScrollContainer" parent="."]
 custom_minimum_size = Vector2(650, 100)
-layout_mode = 0
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 offset_left = 950.0
-offset_right = 1600.0
-offset_bottom = 900.0
-mouse_filter = 0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="MarginContainer" type="MarginContainer" parent="ScrollContainer"]
 layout_mode = 2
 mouse_filter = 2
-theme_override_constants/margin_left = 0
-theme_override_constants/margin_top = 0
-theme_override_constants/margin_right = 0
-theme_override_constants/margin_bottom = 0
+theme_override_constants/margin_left = 1
 
-[node name="GridContainer" type="GridContainer" parent="ScrollContainer/MarginContainer"]
-custom_minimum_size = Vector2(640, 100)
+[node name="SlotGrid" type="Panel" parent="ScrollContainer/MarginContainer"]
+custom_minimum_size = Vector2(256, 256)
 layout_mode = 2
-mouse_filter = 0
-theme_override_constants/h_separation = 0
-theme_override_constants/v_separation = 0
-columns = 10
-
-[node name="Container" type="Control" parent="ScrollContainer/MarginContainer"]
-layout_mode = 2
-mouse_filter = 2
+script = ExtResource("1_yp5al")
+ContainerSize = Vector2i(10, 20)

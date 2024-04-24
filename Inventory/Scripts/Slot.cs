@@ -4,69 +4,20 @@ using System.Linq;
 using System.Threading.Tasks;
 using Godot;
 
-public partial class Slot : Panel
+public class Slot
 {
-    [Export] protected Label amountLabel;
-	public Vector2I GridPosition { get; set; }
-
-	protected ItemSlot _itemSlot = null;
-	/// <summary>
-	/// use InsertItem to replace the itemholder
-	/// </summary>
-	public ItemSlot ItemSlot { get { return this._itemSlot; } set{
-		this._itemSlot = value;
-	}}
-	
-	protected StyleBoxFlat stylebox = new(){BgColor = Colors.Transparent, BorderWidthBottom = 1, BorderWidthLeft = 1, BorderWidthRight = 1, BorderWidthTop = 1};
+	public Slot(Vector2I gridPos)
+	{
+		this.GridPosition = gridPos;
+	}
+	public Vector2I GridPosition { get; protected set; }
+#nullable enable
+	protected ItemSlot? _itemSlot;
+	public ItemSlot? ItemSlot { get { return this._itemSlot; } set{ this._itemSlot = value; } }
+#nullable disable
 	public virtual bool IsEmpty {
 		get{
-			return ItemSlot is null;
+			return ItemSlot == null;
 		}
-	}
-	
-	public static event Action<InputEventMouse, Slot> Clicked;
-	public static event Action<InputEventMouse, Slot> Released;
-	public static event Action<InputEventMouse, Slot> DoubleClick;
-	public static event Action<Slot> MouseEnter;
-	public static event Action<Slot> MouseExit;
-
-	public override void _Ready()
-	{
-		AssignEvents();
-		this.AddThemeStyleboxOverride("panel", stylebox);
-	}
-
-	protected virtual void AssignEvents(){
-		this.GuiInput += this.Input;
-		this.MouseEntered += ()=>{ MouseEnter?.Invoke(this); };
-		this.MouseExited += ()=>{ MouseExit?.Invoke(this); };
-	}
-
-	//communicates to the InventoryManager that a slot was clicked
-	public virtual void Input(InputEvent input){
-		if(input is InputEventMouseButton mouse && mouse.IsPressed()){
-			if(mouse.ButtonIndex == MouseButton.Right){
-				if(ItemSlot != null)
-				GD.Print(ItemSlot.Position);
-				GD.Print(this.Position);
-			}
-			Clicked.Invoke(mouse, this);
-		}
-		if(input is InputEventMouseButton button){
-			if(button.DoubleClick){
-				DoubleClick.Invoke(button, this);
-				return;
-			}
-			if(button.IsReleased() && !button.IsEcho()){
-				Released?.Invoke(button, this);
-			}
-		}
-	}
-
-	public void HighLight(Color? color = null){
-		this.stylebox.BgColor = color == null ? Colors.Green : (Color)color;
-	}
-	public void DeHighLight(Color? color = null){
-		this.stylebox.BgColor = color == null ? Colors.Transparent : (Color)color;
 	}
 }
