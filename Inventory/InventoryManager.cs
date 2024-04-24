@@ -1,23 +1,29 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 
 public partial class InventoryManager : ContainerManager
 {
+    List<IUi> Uis = new();
     [Export] PackedScene itemslotScene;
+    [Export] PackedScene containerScene;
     public override void _Ready()
     {
         base._Ready();
         ItemDatabase.Instance.LoadItems();
         ItemSlot.DragBegin += (s)=>{ 
             _itemSlotBeingDragged = s;
-            RemoveItem(s.GridPosition, s.ItemSize);
-            HighLightSlots(GetTruePosition(focusedSlot.GridPosition, _itemSlotBeingDragged), s);
+            RemoveItem(s.GridPosition, s);
+            HighLightSlots(GetTruePosition(focusedSlot.GridPosition, s), s);
         };
         ItemSlot.DragEnd += (s)=>{ _itemSlotBeingDragged = null; };
-        Slot.Clicked += DropItem;
+        Slot.Clicked += Clicked;
+        Slot.Released += Released;
+        Slot.DoubleClick += DoubleClick;
         Slot.MouseEnter += (slot)=>{
             if(_itemSlotBeingDragged != null){
                 this.focusedSlot = slot;
+                drag = true;
                 HighLightSlots(GetTruePosition(slot.GridPosition, _itemSlotBeingDragged), _itemSlotBeingDragged);
             }
         };
@@ -33,6 +39,7 @@ public partial class InventoryManager : ContainerManager
     }
     
     Slot focusedSlot = null;
+    bool drag = false;
     ItemSlot _itemSlotBeingDragged;
 
     public override void _Process(double delta)
@@ -46,7 +53,11 @@ public partial class InventoryManager : ContainerManager
             if(_itemSlotBeingDragged != null){
                 DeHighlightSlots(GetTruePosition(focusedSlot.GridPosition, _itemSlotBeingDragged), _itemSlotBeingDragged);
                 _itemSlotBeingDragged.Rotated = !_itemSlotBeingDragged.Rotated;
+                drag = true;
             }
+        }
+        if(_itemSlotBeingDragged != null && drag){
+            _itemSlotBeingDragged.GlobalPosition = GetGlobalMousePosition() - _itemSlotBeingDragged.Size / 2;
         }
     }
 
@@ -55,6 +66,29 @@ public partial class InventoryManager : ContainerManager
         int y = Math.Clamp(gridPos.Y - item.ItemSize.Y / 2, 0, inventorySize.Y - item.ItemSize.Y);
         Vector2I truePos = new Vector2I(x, y);
         return truePos;
+    }
+
+    private void Clicked(InputEventMouse mouse, Slot sender){
+        if(sender.ItemSlot != null){
+            this._itemSlotBeingDragged = sender.ItemSlot;
+        }
+    }
+
+    private void DoubleClick(InputEventMouse mouse, Slot sender){
+        if(sender.ItemSlot.ItemHolder.Item is ContainerItem item){
+
+        }
+    }
+
+    public void Released(InputEventMouse mouse, Slot sender){
+        if(_itemSlotBeingDragged != null){
+            if(DropItem(focusedSlot, _itemSlotBeingDragged)){
+                drag = false;
+                _itemSlotBeingDragged.JustRotated = false;
+                _itemSlotBeingDragged = null;
+                return;
+            }
+        }
     }
 
     public void HighLightSlots(Vector2I truePos, ItemSlot slot){
@@ -66,7 +100,7 @@ public partial class InventoryManager : ContainerManager
                 try{
                     Slots[x,y].HighLight(fits ? Colors.Green : Colors.Red);
                 }
-                catch( IndexOutOfRangeException ex) { GD.PrintErr(x,y);}
+                catch { GD.PrintErr(x,y);}
             }
         }
     }
@@ -100,7 +134,8 @@ public partial class InventoryManager : ContainerManager
         {
             for (var X = pos.X; X < itemSize.X + pos.X; X++)
             {
-                if(!this.Slots[X,Y].IsEmpty){
+                // GD.Print(Slots[X,Y].IsEmpty, " empty", X,Y);
+                if(!this.Slots[X,Y].IsEmpty && this.Slots[X,Y].ItemSlot != _itemSlotBeingDragged){
                     return false;
                 }
             }
@@ -114,7 +149,6 @@ public partial class InventoryManager : ContainerManager
         slot.GridPosition = pos;
         this.container.AddChild(slot);
         slot.Position = pos * 64;
-        GD.Print(Slots[pos.X,pos.Y].Position, pos);
         for (int y = pos.Y; y < pos.Y+item.ItemSize.Y; y++)
         {
             for (int x = pos.X; x < pos.X+item.ItemSize.X; x++)
@@ -126,37 +160,53 @@ public partial class InventoryManager : ContainerManager
         return false;
     }
 
-    public void RemoveItem(Vector2I pos, Vector2I itemSize){
-        for (int y = pos.Y; y < pos.Y + itemSize.Y; y++)
+    public void RemoveItem(Vector2I pos, ItemSlot itemSlot){
+        Vector2I trueSize;
+        if(itemSlot.JustRotated){
+            GD.Print("is rotated");
+            trueSize = new Vector2I(itemSlot.ItemSize.Y, itemSlot.ItemSize.X);
+        }
+        else{
+            trueSize = itemSlot.ItemSize;
+        }
+        for (int y = pos.Y; y < pos.Y + trueSize.Y; y++)
         {
-            for (int x = pos.X; x < pos.X + itemSize.X; x++)
+            for (int x = pos.X; x < pos.X + trueSize.X; x++)
             {
                 Slots[x,y].ItemSlot = null;
+                Slots[x,y].DeHighLight();
             }
         }
     }
 
-    public void DropItem(Slot slot){
-        if(_itemSlotBeingDragged != null){
+    public bool DropItem(Slot slot, ItemSlot itemSlot){
+        if(itemSlot != null){
             Vector2I truePos = GetTruePosition(slot.GridPosition, _itemSlotBeingDragged);
-            Vector2I itemSize = _itemSlotBeingDragged.ItemSize;
-            if(ItemFits(truePos, itemSize)){
-                RemoveItem(_itemSlotBeingDragged.GridPosition, itemSize);
-                DeHighlightSlots(GetTruePosition(slot.GridPosition, _itemSlotBeingDragged), _itemSlotBeingDragged);
-                _itemSlotBeingDragged.GridPosition = truePos;
-                _itemSlotBeingDragged.StopDrag();
-                _itemSlotBeingDragged.GlobalPosition = Slots[truePos.X, truePos.Y].GlobalPosition;
-                GD.Print("global", Slots[truePos.X, truePos.Y].GlobalPosition);
+            Vector2I itemSize = itemSlot.ItemSize;
+            if(!ItemFits(truePos, itemSize)){
+                truePos = itemSlot.GridPosition;
+                if(itemSlot.JustRotated){
+                    itemSlot.Rotated = !itemSlot.Rotated;
+                }
+            }
+            else{
+                RemoveItem(itemSlot.GridPosition, itemSlot);
                 for (int y = truePos.Y; y < truePos.Y + itemSize.Y; y++)
                 {
                     for (int x = truePos.X; x < truePos.X + itemSize.X; x++)
                     {
-                        Slots[x,y].ItemSlot = _itemSlotBeingDragged;
+                        Slots[x,y].ItemSlot = itemSlot;
                         Slots[x,y].HighLight(Colors.Purple);
                     }
                 }
-                _itemSlotBeingDragged = null;
             }
+            DeHighlightSlots(GetTruePosition(slot.GridPosition, itemSlot), itemSlot);   
+            DeHighlightSlots(itemSlot.GridPosition, itemSlot);   
+            itemSlot.GridPosition = truePos;
+            itemSlot.GlobalPosition = Slots[truePos.X, truePos.Y].GlobalPosition;
+            itemSlot.JustRotated = false;
+            return true;
         }
+        return false;
     }
 }

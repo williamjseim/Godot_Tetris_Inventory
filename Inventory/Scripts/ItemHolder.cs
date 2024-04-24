@@ -30,7 +30,7 @@ public class ItemHolder
     this.id = item == null ?  BaseItem.Empty : item.Id;
   } } // resources cant be serialized and therefore not saved to a json file
   [JsonIgnore]
-  public Texture2D Texture { get{ return this.Item == null ? null : this.Item.ItemSprite; } }
+  public Texture2D Texture { get{ return this.Item == null ? null : this.Item.ItemTexture; } }
 
   public string id;
 	public string Id { get { return this.Item == null ? BaseItem.Empty : Item.Id; }} // -1 means the slot is empty

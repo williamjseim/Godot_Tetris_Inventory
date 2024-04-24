@@ -1,16 +1,21 @@
 using Godot;
 using Newtonsoft.Json;
-using System;
 
 public class BaseItem
 {
-
   public BaseItem(){}
 	public string Name { get;  set;}
 	public string Id { get;  set; } = BaseItem.Empty; // id for saving item to json like how minecraft does it so ParentFolder:ItemName
   [JsonIgnore]
-	public virtual Texture2D ItemSprite { get;  set; } // item image
-  public string SpritePath { set { ItemSprite = ResourceLoader.Load<Texture2D>(value); } }
+	public virtual Texture2D ItemTexture { get;  set; } // item image
+	public virtual Texture2D RotatedItemTexture { get;  set; } // item image
+  public string SpritePath { set { 
+      ItemTexture = ResourceLoader.Load<Texture2D>(value);
+      Image image = this.ItemTexture.GetImage();
+      image.Rotate90(ClockDirection.Clockwise);
+      this.RotatedItemTexture = ImageTexture.CreateFromImage(image);
+    }}
+
 	public virtual int StackSize { get;  set; } = 999; // max stack size
   public virtual Vector2I ItemSize { get;  set; } = new Vector2I(1,1);
 

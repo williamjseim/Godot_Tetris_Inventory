@@ -1,7 +1,7 @@
 using Godot;
 using System;
 
-public partial class ContainerManager : Panel
+public partial class ContainerManager : Panel, IUi, IDoubleClick
 {
     protected Slot[,] _slots;
     public Slot[,] Slots { get {return _slots; } }
@@ -26,5 +26,22 @@ public partial class ContainerManager : Panel
         }
     }
 
+    public void OpenUi()
+    {
+        throw new NotImplementedException();
+    }
 
+    public void CloseUi()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void Setup(ContainerItem item){
+        
+    }
+
+    public void DoubleClick()
+    {
+        throw new NotImplementedException();
+    }
 }

@@ -26,56 +26,34 @@ public partial class ItemSlot : Panel{
             }
         }
     }
-
+    private bool _justRotated = false;
+    public bool JustRotated { get { return _justRotated; } set { _justRotated = value; } }
     private bool _rotated = false;
     public bool Rotated { get { return _rotated;} set {
         _rotated = value;
+        _justRotated = true;
         if(value == true){
-            Image image = this.itemsprite.Texture.GetImage();
-            image.Rotate90(ClockDirection.Clockwise);
-            this.itemsprite.Texture = ImageTexture.CreateFromImage(image);
+            this.itemsprite.Texture = this.ItemHolder.Item.RotatedItemTexture;
             this.SlotSize = this.ItemSize;
         }
         else{
-            this.itemsprite.Texture = this.ItemHolder.Item.ItemSprite;
+            this.itemsprite.Texture = this.ItemHolder.Item.ItemTexture;
             this.SlotSize = this.ItemSize;
         }
     }}
     public Vector2I ItemSize { get { return Rotated ? new Vector2I(ItemHolder.Item.ItemSize.Y, ItemHolder.Item.ItemSize.X) : ItemHolder.Item.ItemSize; } }
-
     StyleBoxTexture itemsprite = new StyleBoxTexture();
     public override void _Ready()
     {
         base._Ready();
         this.AddThemeStyleboxOverride("panel", itemsprite);
-        this.GuiInput += this.Input;
     }
 
-    bool isDragged = false;
     public static event Action<ItemSlot> DragBegin;
     public static event Action<ItemSlot> DragEnd;
-
-    public void StopDrag(){
-        isDragged = false;
-    }
 
     public override void _Process(double delta)
     {
         base._Process(delta);
-        if(isDragged){
-            this.GlobalPosition = this.GetGlobalMousePosition() - this.Size / 2;
-        }
-    }
-
-    public void Input(InputEvent @event){
-        if(@event is InputEventMouse mouse){
-            if(mouse.ButtonMask == MouseButtonMask.Left && mouse.IsPressed()){
-                this.GlobalPosition = this.GetGlobalMousePosition() - this.Size / 2;
-                isDragged = true;
-                TopLevel = true;
-                DragBegin?.Invoke(this);
-                // this.MouseFilter = MouseFilterEnum.Ignore;
-            }
-        }
     }
 }

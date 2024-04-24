@@ -21,7 +21,7 @@ public partial class DraggedItem : Panel, IInsertItem
 	StyleBoxTexture stylebox = new();
 	public override void _Ready()
 	{
-		this.stylebox.Texture = ItemHolder.Equals(ItemHolder.Empty) ? null : ItemHolder.Item.ItemSprite;
+		this.stylebox.Texture = ItemHolder.Equals(ItemHolder.Empty) ? null : ItemHolder.Item.ItemTexture;
 		this.AddThemeStyleboxOverride("panel", stylebox);
 	}
 

@@ -24,7 +24,9 @@ public partial class Slot : Panel
 		}
 	}
 	
-	public static event Action<Slot> Clicked;
+	public static event Action<InputEventMouse, Slot> Clicked;
+	public static event Action<InputEventMouse, Slot> Released;
+	public static event Action<InputEventMouse, Slot> DoubleClick;
 	public static event Action<Slot> MouseEnter;
 	public static event Action<Slot> MouseExit;
 
@@ -43,13 +45,20 @@ public partial class Slot : Panel
 	//communicates to the InventoryManager that a slot was clicked
 	public virtual void Input(InputEvent input){
 		if(input is InputEventMouseButton mouse && mouse.IsPressed()){
-			if(mouse.ButtonIndex == MouseButton.Left){
-				if(ItemSlot != null){
-					ItemSlot.Input(input);
-				}
-				else{
-					Clicked?.Invoke(this);
-				}
+			if(mouse.ButtonIndex == MouseButton.Right){
+				if(ItemSlot != null)
+				GD.Print(ItemSlot.Position);
+				GD.Print(this.Position);
+			}
+			Clicked.Invoke(mouse, this);
+		}
+		if(input is InputEventMouseButton button){
+			if(button.DoubleClick){
+				DoubleClick.Invoke(button, this);
+				return;
+			}
+			if(button.IsReleased() && !button.IsEcho()){
+				Released?.Invoke(button, this);
 			}
 		}
 	}
