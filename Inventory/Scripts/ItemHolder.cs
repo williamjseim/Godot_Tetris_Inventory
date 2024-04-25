@@ -3,38 +3,36 @@ using System;
 using System.Text.Json.Serialization;
 
 [Serializable]
-public class ItemHolder
+public struct ItemHolder
 {
-  public event Action ObjectMoved;
-  public void ItemRemoved(){
-    ObjectMoved?.Invoke();
+  public ItemHolder(){
+    this._item = null;
+    this._amount = 0;
+    this.StaticModifiers = new ItemModifier[0];
+    this.AddedModifiers = new ItemModifier[0];
   }
-  public ItemHolder(){ Item = null; Amount = 0; }
 
   public ItemHolder(BaseItem item, int amount)
   {
-    this.Item = item;
-    this.Amount = amount;
+    this._item = item;
+    this.StaticModifiers = item.Modifiers;
+    this._amount = amount;
+    this.AddedModifiers = new ItemModifier[0];
   }
 
-  public ItemHolder(ItemHolder itemHolder)
-  {
-    this.Item = itemHolder.Item;
-    this.Amount = itemHolder.Amount;
-  }
-
-  private BaseItem item;
+  private BaseItem _item;
+  
 	[JsonIgnore]
-	public BaseItem Item { get{ return item; } set{
-    this.item = value;
-    this.id = item == null ?  BaseItem.Empty : item.Id;
+	public BaseItem Item { get{ return _item; } set{
+    this._item = value;
   } } // resources cant be serialized and therefore not saved to a json file
+  
   [JsonIgnore]
   public Texture2D Texture { get{ return this.Item == null ? null : this.Item.ItemTexture; } }
 
-  public string id;
 	public string Id { get { return this.Item == null ? BaseItem.Empty : Item.Id; }} // -1 means the slot is empty
-	public int Amount { get; set; } //amount of items in slot
+  public int _amount;
+	public int Amount { get {return _amount; } set { _amount = value; } } //amount of items in slot
 
   /// <summary>
   /// Usefull if you want a item to have a custom name and dont wanna override the name the item resource has
@@ -43,8 +41,11 @@ public class ItemHolder
   public string Name
   {
     get { return this.name == string.Empty ? this.Item.Name : this.name; }
-    protected set { name = value; }
+    private set { name = value; }
   }
+
+  public ItemModifier[] StaticModifiers;
+  public ItemModifier[] AddedModifiers;
   
   /// <summary>
   /// Use this to check if itemholders are equal
@@ -57,32 +58,6 @@ public class ItemHolder
       return true;
 
     return false;
-  }
-
-  public static bool operator == (ItemHolder a, ItemHolder b){
-    if(b is null){
-      return false;
-    }
-    return a.Equals(b);
-  }
-
-  public static bool operator != ( ItemHolder a, ItemHolder b){
-    if(b is null){
-      return true;
-    }
-    return !a.Equals(b);
-  }
-
-  /// <summary>
-  /// Itemholder cant be transfered between slots without cloning them if they dont get cloned they will get overriden no matter what slot the itemholder was transfered to
-  /// Should be called In the class that gonna use it
-  /// </summary>
-  /// <returns></returns>
-  public virtual ItemHolder Clone(){
-    return new ItemHolder(){
-      Item = this.Item,
-      Amount = this.Amount,
-    };
   }
 
   public override int GetHashCode()

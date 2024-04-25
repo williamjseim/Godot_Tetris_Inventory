@@ -1,7 +1,15 @@
 using System;
 using Godot;
 
-public partial class ItemSlot : Panel{
+public partial class ItemSlot : Panel, ISaveAble{
+
+    public ItemSlot()
+    {
+        this.ZIndex = 1;
+        MouseFilter = MouseFilterEnum.Ignore;
+
+    }
+    public Vector2 TruePosition { get{ return this.Position + new Vector2(InventoryManager.SlotSize/2, InventoryManager.SlotSize/2); } }
 
     private Vector2I _gridPosition;
     public Vector2I GridPosition
@@ -11,6 +19,14 @@ public partial class ItemSlot : Panel{
             _gridPosition = value;
         }
     }
+
+    private SlotContainer _container;
+    public SlotContainer Container
+    {
+        get { return _container; }
+        set { _container = value; }
+    }
+    
     
     public Vector2I SlotSize { get { return (Vector2I)this.Size / 64; } set { this.Size = value * 64; } }
     private ItemHolder _ItemHolder;
@@ -18,14 +34,19 @@ public partial class ItemSlot : Panel{
     {
         get { return _ItemHolder; }
         set { _ItemHolder = value;
-            if(value != null){
-
+            if(!value.Equals(ItemHolder.Empty)){
                 this.itemsprite.Texture = ItemHolder.Texture;
                 this.SlotSize = value.Item.ItemSize;
-                this.TreeExited += ()=>{ this._ItemHolder.ItemRemoved(); };
             }
         }
     }
+
+    public bool IsFull
+    {
+        get { return ItemHolder.Amount >= ItemHolder.Item.StackSize; }
+    }
+    
+
     private bool _justRotated = false;
     public bool JustRotated { get { return _justRotated; } set { _justRotated = value; } }
     private bool _rotated = false;
@@ -56,4 +77,28 @@ public partial class ItemSlot : Panel{
     {
         base._Process(delta);
     }
+
+    public int CombineItems(ItemHolder item){
+        int spaceAvailable = this.ItemHolder.Item.StackSize - this.ItemHolder.Amount;
+        if(spaceAvailable > item.Amount){
+            _ItemHolder.Amount += item.Amount;
+            return 0;
+        }
+        else{
+            int extras = Math.Abs(item.Amount - ItemHolder.Amount);
+            _ItemHolder.Amount = this.ItemHolder.Item.StackSize;
+            return extras;
+        }
+    }
+
+    public object Save()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void Load(object obj)
+    {
+        throw new NotImplementedException();
+    }
+
 }

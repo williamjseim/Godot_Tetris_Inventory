@@ -13,6 +13,10 @@ public partial class SlotContainer : Panel{
 
     public static event Action<SlotContainer> MouseEnteredContainer;
     public static event Action<SlotContainer> MouseLeftContainer;
+    public static event Action<SlotContainer, InputEventMouseMotion> MouseMotion;
+    public static event Action<SlotContainer, InputEventMouseButton, ItemSlot> MousePressed;
+    public static event Action<SlotContainer, InputEventMouse> MouseReleased;
+    public static event Action<SlotContainer, InputEventMouseButton> MouseDoubleClick;
     public override void _Ready()
     {
         base._Ready();
@@ -32,24 +36,14 @@ public partial class SlotContainer : Panel{
 
     }
     Vector2I slot;
-    Panel _panel;
     private void MouseEnter(){
         MouseEnteredContainer?.Invoke(this);
-        if(_panel == null){
-            _panel = new();
-        StyleBoxFlat style = new();
-        style.BgColor = Colors.Green;
-        _panel.AddThemeStyleboxOverride("panel", style);
-        _panel.Size = new Vector2(64, 64);
-        _panel.MouseFilter = MouseFilterEnum.Ignore;
-        }
-        this.AddChild(_panel);
+        // this.AddChild(_panel);
     }
 
     private void MouseExit(){
-        MouseEnteredContainer?.Invoke(this);
-        this.RemoveChild(_panel);
-        _panel = null;
+        MouseLeftContainer?.Invoke(this);
+        // this.RemoveChild(_panel);
     }
 
     public override void _Draw()
@@ -64,36 +58,64 @@ public partial class SlotContainer : Panel{
             }
         }
     }
+
+    public Vector2I GetSlotIndex(Vector2 pos, Vector2I itemsize = new Vector2I()){
+        return ((Vector2I)pos/InventoryManager.SlotSize).Clamp(Vector2I.Zero, this.ContainerSize - itemsize);
+    }
+
+    public Vector2 GetSlotPosition(Vector2I index){
+        return index*InventoryManager.SlotSize;
+    }
+
+    public Vector2 MouseToSlotPosition(Vector2 mousePos, Vector2I itemsize = new Vector2I()){
+        return GetSlotPosition(GetSlotIndex(mousePos).Clamp(Vector2I.Zero, this.ContainerSize - itemsize));
+    }
+
     public void Input(InputEvent @event){
-        if(@event is InputEventMouseMotion motion){
-            if(_panel != null){
-                Vector2I slotPos = GetSlotPos();
-                if(this.slot != slotPos){
-                    this.slot = slotPos;
-                    _panel.Position = slotPos*64;
-                }
+        if(@event is InputEventMouseButton button){
+            if(button.DoubleClick){
+                MouseDoubleClick?.Invoke(this, button);
             }
+            else if(button.ButtonMask == MouseButtonMask.Left && button.IsPressed()){
+                Vector2I index = GetSlotIndex(button.Position);
+                if(!this.Slots[index.X, index.Y].IsEmpty)
+                    MousePressed?.Invoke(this, button, Slots[index.X, index.Y].ItemSlot);
+            }
+            else if(button.ButtonIndex == MouseButton.Left && button.IsReleased()){
+                MouseReleased?.Invoke(this, button);
+            }
+            else if(button.ButtonIndex == MouseButton.Right && button.IsPressed()){
+                Vector2I index = GetSlotIndex(button.Position);
+                if(!this.Slots[index.X, index.Y].IsEmpty)
+                   GD.Print(this.Slots[index.X, index.Y].ItemSlot.ItemHolder.Item.Modifiers);
+            }
+        }
+        else if(@event is InputEventMouseMotion motion){
+            MouseMotion?.Invoke(this, motion);
         }
     }
 
-    public Vector2I GetSlotPos(){
-        Vector2I slotPos = (Vector2I)(GetLocalMousePosition() / 64);
-        return slotPos;
-    }
-
     public bool InsertItem(ItemHolder item){
+        if(CheckForExistingItem(item, out ItemSlot slot)){
+            int i = slot.CombineItems(item);
+            if(i <= 0){
+                return true;
+            }
+            item.Amount = i;
+        }
         for (int y = 0; y <= ContainerSize.Y - item.Item.ItemSize.Y; y++)
         {
             for (int x = 0; x <= ContainerSize.X - item.Item.ItemSize.X; x++)
             {
                 if(ItemFits(new Vector2I(x, y), item.Item)){
-                    ItemSlot slot = new();
-                    slot.GridPosition = new(x, y);
-                    slot.ItemHolder = item.Clone();
-                    slot.Size = item.Item.ItemSize * InventoryManager.SlotSize;
-                    slot.Position = new Vector2I(x, y) * InventoryManager.SlotSize;
-                    PlaceItem(new(x,y), slot);
-                    this.AddChild(slot);
+                    ItemSlot itemslot = new();
+                    itemslot.GridPosition = new(x, y);
+                    itemslot.Container = this;
+                    itemslot.ItemHolder = item;
+                    itemslot.Size = item.Item.ItemSize * InventoryManager.SlotSize;
+                    itemslot.Position = new Vector2I(x, y) * InventoryManager.SlotSize;
+                    PlaceItem(new(x,y), itemslot);
+                    this.AddChild(itemslot);
                     return true;
                 }
             }
@@ -101,11 +123,29 @@ public partial class SlotContainer : Panel{
         return false;
     }
 
+    public bool CheckForExistingItem(ItemHolder item, out ItemSlot ExistingItem){
+        for (int y = 0; y < ContainerSize.Y; y++)
+        {
+            for (int x = 0; x < ContainerSize.X; x++)
+            {
+                Slot slot = this.Slots[x, y];
+                if(!slot.IsEmpty && slot.ItemSlot.ItemHolder.Equals(item) && !slot.ItemSlot.IsFull){
+                    ExistingItem = slot.ItemSlot;
+                    return true;
+                }
+            }
+        }
+        ExistingItem = null;
+        return false;
+    }
+
     public bool InsertItem(Vector2I truePos, ItemSlot itemslot){
         if(ItemFits(truePos, itemslot)){
+            itemslot.Container.RemoveItem(itemslot);
             itemslot.GridPosition = truePos;
             itemslot.Position = truePos * InventoryManager.SlotSize;
             PlaceItem(truePos, itemslot);
+            itemslot.Container = this;
             return true;
         }
         return false;
@@ -125,12 +165,13 @@ public partial class SlotContainer : Panel{
     }
 
     public bool ItemFits(Vector2I truePos, ItemSlot itemslot){
+        GD.Print(itemslot.ItemSize);
         for (int y = truePos.Y; y < truePos.Y + itemslot.ItemSize.Y; y++)
         {   
             for (int x = truePos.X; x < truePos.X + itemslot.ItemSize.X; x++)
-            {   
-                if(!Slots[x,y].IsEmpty){
-                     return false;
+            {
+                if(!Slots[x,y].IsEmpty && Slots[x,y].ItemSlot != itemslot){
+                    return false;
                 }
             }
         }
@@ -145,5 +186,31 @@ public partial class SlotContainer : Panel{
                 Slots[x,y].ItemSlot = item;
             }
         }
+    }
+
+    public void RemoveItem(ItemSlot itemSlot){
+        Vector2I trueSize;
+        if(itemSlot.JustRotated){
+            trueSize = new Vector2I(itemSlot.ItemSize.Y, itemSlot.ItemSize.X);
+        }
+        else{
+            trueSize = itemSlot.ItemSize;
+        }
+        for (int y = itemSlot.GridPosition.Y; y < itemSlot.GridPosition.Y + trueSize.Y ; y++)
+        {
+            for (int x = itemSlot.GridPosition.X; x < itemSlot.GridPosition.X + trueSize.X ; x++)
+            {
+                // GD.Print(x, y, " removed");
+                this.Slots[x,y].ItemSlot = null;
+            }
+            
+        }
+    }
+
+    public void ResetItem(ItemSlot itemSlot){
+        if(itemSlot.JustRotated){
+            itemSlot.Rotated = !itemSlot.Rotated;
+        }
+        itemSlot.Position = GetSlotPosition(itemSlot.GridPosition);
     }
 }

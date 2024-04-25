@@ -47,7 +47,7 @@ public partial class DraggedItem : Panel, IInsertItem
 
     public void InsertItem(ItemHolder itemHolder)
     {
-		this.ItemHolder = itemHolder.Clone();
+		this.ItemHolder = itemHolder;
     }
 
 }
