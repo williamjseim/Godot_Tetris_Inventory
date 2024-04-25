@@ -1,7 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://dfc3col2yn2t6"]
+[gd_scene load_steps=2 format=3 uid="uid://dfc3col2yn2t6"]
 
 [ext_resource type="PackedScene" uid="uid://ikdk11wfsbba" path="res://Inventory/Inventory.tscn" id="1_n7tje"]
-[ext_resource type="PackedScene" uid="uid://b566lwnq6v5wi" path="res://Inventory/Scenes/ContainerWindow.tscn" id="2_67kx2"]
 
 [node name="Main" type="Node"]
 
@@ -16,4 +15,3 @@ grow_vertical = 2
 
 [node name="Inventory" parent="CanvasLayer/CenterContainer" instance=ExtResource("1_n7tje")]
 layout_mode = 2
-ContainerWindowScene = ExtResource("2_67kx2")

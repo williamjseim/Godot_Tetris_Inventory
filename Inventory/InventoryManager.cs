@@ -17,6 +17,8 @@ public partial class InventoryManager : Panel, ISaveAble
 
     public bool Dragging { get; set; }
     public Vector2I DragPosition { get; set; }
+
+    List<ContainerWindow> OpenedWindows = new(10);
     
     public ItemSlot focusedSlot;
     public override void _Ready()
@@ -54,8 +56,12 @@ public partial class InventoryManager : Panel, ISaveAble
     }
 
     public void ContainerEnter(SlotContainer container){
-        GD.Print("containe");
-        FocusedContainer = container;
+        if(FocusedContainer != container){
+            FocusedContainer = container;
+            focusedSlot.Container.RemoveChild(focusedSlot);
+            container.AddChild(focusedSlot);
+            GD.Print("asssss");
+        }
         if(Dragging && !HighlightPanel.IsVisibleInTree() && HighlightPanel.GetParent() != container)
             container.AddChild(HighlightPanel);
     }
@@ -73,12 +79,12 @@ public partial class InventoryManager : Panel, ISaveAble
 
     public void MouseMotion(InputEventMouseMotion motion){
         if(focusedSlot != null){
-            focusedSlot.Position = motion.Position - focusedSlot.Size/2;
+            focusedSlot.Position = motion.GlobalPosition - focusedSlot.Size/2;
             if(Dragging){
                 if(FocusedContainer != null){
                     Vector2I cellPosition = FocusedContainer.GetSlotIndex(motion.Position, focusedSlot == null ? Vector2I.Zero : focusedSlot.ItemSize);
                     if(cellPosition != DragPosition){
-                        Vector2I pos = FocusedContainer.GetSlotIndex(focusedSlot.TruePosition, focusedSlot.ItemSize);
+                        Vector2I pos = FocusedContainer.GetSlotIndex((focusedSlot.TruePosition - FocusedContainer.GlobalPosition).Abs(), focusedSlot.ItemSize);
                         Color color = FocusedContainer.ItemFits(pos, focusedSlot) ? Colors.Green : Colors.Red;
                         this.HighlightPanel.SetColor(color);
                         this.HighlightPanel.Position = FocusedContainer.GetSlotPosition(pos);
@@ -113,9 +119,9 @@ public partial class InventoryManager : Panel, ISaveAble
     public void DoubleClick(SlotContainer container, InputEventMouseButton button, ItemSlot item){
         if(item.ItemHolder.TryGetModifier<ContainerModifier>(out ContainerModifier modifier)){
             ContainerWindow window = this.ContainerWindowScene.Instantiate<ContainerWindow>();
-            GD.Print(modifier.ContainerSize, " double");
             this.AddChild(window);
             window.Modifier = modifier;
+            window.Position = this.Size / 2 - window.Size;
         }
     }
 

@@ -61,6 +61,10 @@ public partial class SlotContainer : ContainerManager{
         return GetSlotPosition(GetSlotIndex(mousePos).Clamp(Vector2I.Zero, this.ContainerSize - itemsize));
     }
 
+    public Vector2 IndexToGlobal(Vector2I index){
+        return index;
+    }
+
     public override void Input(InputEvent @event){
         base.Input(@event);
         if(@event is InputEventMouseButton button){
