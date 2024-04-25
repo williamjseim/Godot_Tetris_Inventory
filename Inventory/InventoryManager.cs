@@ -2,9 +2,12 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
-public partial class InventoryManager : ContainerManager, ISaveAble
+public partial class InventoryManager : Panel, ISaveAble
 {
+    [Export] PackedScene ContainerWindowScene;
+
     List<IUi> Uis = new();
     public static PackedScene containerScene { get; protected set;} = ResourceLoader.Load<PackedScene>("res://Inventory/Scenes/Slot.tscn");
     public static int SlotSize = 64;
@@ -30,6 +33,7 @@ public partial class InventoryManager : ContainerManager, ISaveAble
         SlotContainer.MouseLeftContainer += ContainerExit;
         SlotContainer.MousePressed += MousePressed;
         SlotContainer.MouseReleased += MouseReleased;
+        SlotContainer.MouseDoubleClick += this.DoubleClick;
         this.InsertItem(ItemDatabase.Instance.GetItem("BasicRod"), slotContainer);
         this.InsertItem(ItemDatabase.Instance.GetItem("Fish"), slotContainer);
         this.InsertItem(ItemDatabase.Instance.GetItem("InternalStorage"), slotContainer);
@@ -50,6 +54,7 @@ public partial class InventoryManager : ContainerManager, ISaveAble
     }
 
     public void ContainerEnter(SlotContainer container){
+        GD.Print("containe");
         FocusedContainer = container;
         if(Dragging && !HighlightPanel.IsVisibleInTree() && HighlightPanel.GetParent() != container)
             container.AddChild(HighlightPanel);
@@ -63,20 +68,22 @@ public partial class InventoryManager : ContainerManager, ISaveAble
     }
 
     public void InsertItem(BaseItem item, SlotContainer container){
-        container.InsertItem(new ItemHolder(){Item = item, Amount = 1});
+        container.InsertItem(new ItemHolder(item, 1));
     }
 
-    public void MouseMotion(SlotContainer container, InputEventMouseMotion motion){
-        Vector2I cellPosition = container.GetSlotIndex(motion.Position, focusedSlot == null ? Vector2I.Zero : focusedSlot.ItemSize);
+    public void MouseMotion(InputEventMouseMotion motion){
         if(focusedSlot != null){
             focusedSlot.Position = motion.Position - focusedSlot.Size/2;
             if(Dragging){
-                if(cellPosition != DragPosition){
-                    Vector2I pos = container.GetSlotIndex(focusedSlot.TruePosition, focusedSlot.ItemSize);
-                    Color color = container.ItemFits(pos, focusedSlot) ? Colors.Green : Colors.Red;
-                    this.HighlightPanel.SetColor(color);
-                    this.HighlightPanel.Position = container.GetSlotPosition(pos);
-                    DragPosition = cellPosition;
+                if(FocusedContainer != null){
+                    Vector2I cellPosition = FocusedContainer.GetSlotIndex(motion.Position, focusedSlot == null ? Vector2I.Zero : focusedSlot.ItemSize);
+                    if(cellPosition != DragPosition){
+                        Vector2I pos = FocusedContainer.GetSlotIndex(focusedSlot.TruePosition, focusedSlot.ItemSize);
+                        Color color = FocusedContainer.ItemFits(pos, focusedSlot) ? Colors.Green : Colors.Red;
+                        this.HighlightPanel.SetColor(color);
+                        this.HighlightPanel.Position = FocusedContainer.GetSlotPosition(pos);
+                        DragPosition = cellPosition;
+                    }
                 }
             }
         }
@@ -101,6 +108,15 @@ public partial class InventoryManager : ContainerManager, ISaveAble
             container.RemoveChild(HighlightPanel);
         }
 
+    }
+
+    public void DoubleClick(SlotContainer container, InputEventMouseButton button, ItemSlot item){
+        if(item.ItemHolder.TryGetModifier<ContainerModifier>(out ContainerModifier modifier)){
+            ContainerWindow window = this.ContainerWindowScene.Instantiate<ContainerWindow>();
+            GD.Print(modifier.ContainerSize, " double");
+            this.AddChild(window);
+            window.Modifier = modifier;
+        }
     }
 
     public object Save()

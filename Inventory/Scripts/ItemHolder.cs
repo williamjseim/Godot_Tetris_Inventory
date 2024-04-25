@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Linq;
 using System.Text.Json.Serialization;
 
 [Serializable]
@@ -16,6 +17,7 @@ public struct ItemHolder
   {
     this._item = item;
     this.StaticModifiers = item.Modifiers;
+    GD.Print(item.Modifiers, " modifiers");
     this._amount = amount;
     this.AddedModifiers = new ItemModifier[0];
   }
@@ -63,6 +65,13 @@ public struct ItemHolder
   public override int GetHashCode()
   {
       return base.GetHashCode();
+  }
+
+  public bool TryGetModifier<T>(out T modifier) where T : ItemModifier {
+    modifier = (T)StaticModifiers.Where(i=>i is T).FirstOrDefault();
+    var test = StaticModifiers.Where(i=>i is ContainerModifier).First();
+    GD.Print(test);
+    return modifier != null;
   }
 
     public static ItemHolder Empty => new ItemHolder();

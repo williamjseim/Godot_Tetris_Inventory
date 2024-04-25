@@ -10,7 +10,7 @@ public class BaseItem
 	public virtual Texture2D ItemTexture { get;  set; } // item image
 	public virtual Texture2D RotatedItemTexture { get;  set; } // item image
 
-  public virtual ItemModifier[] Modifiers { get; set; } = new ItemModifier[0];
+  public virtual ItemModifier[] Modifiers { get; set; }
   public string SpritePath { set { 
       ItemTexture = ResourceLoader.Load<Texture2D>(value);
       Image image = this.ItemTexture.GetImage();

@@ -1,12 +1,13 @@
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Godot;
 
 public class ContainerItem : BaseItem{
 
     public ContainerItem() : base()
     {
-        this.Modifiers = new ItemModifier[4];
     }
-    public Vector2I InternalStorageSize { get; protected set; } = Vector2I.One;
+    public Vector2I InternalStorageSize { set { GD.Print(value); this.Modifiers = new ItemModifier[]{ new ContainerModifier(value) }; } }
     
 }
