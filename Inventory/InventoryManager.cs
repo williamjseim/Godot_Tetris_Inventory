@@ -8,25 +8,35 @@ public partial class InventoryManager : Panel, ISaveAble
 {
     [Export] PackedScene ContainerWindowScene;
 
-    List<IUi> Uis = new();
+    List<BaseWindow> Uis = new();
     public static PackedScene containerScene { get; protected set;} = ResourceLoader.Load<PackedScene>("res://Inventory/Scenes/Slot.tscn");
     public static int SlotSize = 64;
     [Export] SlotContainer slotContainer;
     SlotContainer FocusedContainer;
-    public Highlight HighlightPanel { get; protected set; }
-
+    BaseWindow FocusedWindow;
     public bool Dragging { get; set; }
-    public Vector2I DragPosition { get; set; }
 
     List<ContainerWindow> OpenedWindows = new(10);
     
-    public ItemSlot focusedSlot;
+    private ItemSlot _focusedSlot;
+    public ItemSlot focusedSlot
+    {
+        get { return _focusedSlot; }
+        set {
+            if(_focusedSlot != null){
+                _focusedSlot.TopLevel = false;
+            }
+            else{
+                value.TopLevel = true;
+            }
+            _focusedSlot = value;
+            
+        }
+    }
+    
     public override void _Ready()
     {
         base._Ready();
-        if(HighlightPanel == null){
-            HighlightPanel = new();
-        }
         ItemDatabase.Instance.LoadItems();
         SlotContainer.MouseEnteredContainer += (e)=>{ FocusedContainer = e; };
         SlotContainer.MouseLeftContainer += (e)=>{ FocusedContainer = null; };
@@ -47,10 +57,8 @@ public partial class InventoryManager : Panel, ISaveAble
         if(Input.IsActionJustPressed("Rotate")){
             if(focusedSlot != null){
                 focusedSlot.Rotated = !focusedSlot.Rotated;
-                var local = FocusedContainer.GetLocalMousePosition();
+                var local = GetGlobalMousePosition();
                 focusedSlot.Position = local - focusedSlot.Size/2;
-                HighlightPanel.Size = focusedSlot.Size;
-                HighlightPanel.Position = FocusedContainer.MouseToSlotPosition(focusedSlot.TruePosition);
             }
         }
     }
@@ -60,17 +68,11 @@ public partial class InventoryManager : Panel, ISaveAble
             FocusedContainer = container;
             focusedSlot.Container.RemoveChild(focusedSlot);
             container.AddChild(focusedSlot);
-            GD.Print("asssss");
         }
-        if(Dragging && !HighlightPanel.IsVisibleInTree() && HighlightPanel.GetParent() != container)
-            container.AddChild(HighlightPanel);
     }
 
     public void ContainerExit(SlotContainer container){
         FocusedContainer = null;
-        if(!Dragging && HighlightPanel.IsVisibleInTree() && HighlightPanel.GetParent() == container){
-            container.RemoveChild(HighlightPanel);
-        }
     }
 
     public void InsertItem(BaseItem item, SlotContainer container){
@@ -82,14 +84,8 @@ public partial class InventoryManager : Panel, ISaveAble
             focusedSlot.Position = motion.GlobalPosition - focusedSlot.Size/2;
             if(Dragging){
                 if(FocusedContainer != null){
-                    Vector2I cellPosition = FocusedContainer.GetSlotIndex(motion.Position, focusedSlot == null ? Vector2I.Zero : focusedSlot.ItemSize);
-                    if(cellPosition != DragPosition){
-                        Vector2I pos = FocusedContainer.GetSlotIndex((focusedSlot.TruePosition - FocusedContainer.GlobalPosition).Abs(), focusedSlot.ItemSize);
-                        Color color = FocusedContainer.ItemFits(pos, focusedSlot) ? Colors.Green : Colors.Red;
-                        this.HighlightPanel.SetColor(color);
-                        this.HighlightPanel.Position = FocusedContainer.GetSlotPosition(pos);
-                        DragPosition = cellPosition;
-                    }
+                    // Vector2I cellPosition = FocusedContainer.GetSlotIndex(motion.Position, focusedSlot == null ? Vector2I.Zero : focusedSlot.ItemSize);
+                    FocusedContainer.Highlight(focusedSlot);
                 }
             }
         }
@@ -98,32 +94,39 @@ public partial class InventoryManager : Panel, ISaveAble
     public void MousePressed(SlotContainer container, InputEventMouseButton button, ItemSlot itemslot){
         focusedSlot = itemslot;
         Dragging = true;
-        container.AddChild(HighlightPanel);
-        HighlightPanel.Size = itemslot.Size;
-        HighlightPanel.Position = itemslot.Position;
     }
 
     public void MouseReleased(SlotContainer container, InputEventMouse mouse){
-        Dragging = false;
+        
         if(focusedSlot != null){
-            if(!container.InsertItem(container.GetSlotIndex(focusedSlot.TruePosition, focusedSlot.ItemSize), focusedSlot)){
+            if(FocusedContainer == null){
+                this.ResetItemPosition(focusedSlot);
+                focusedSlot = null;
+                return;
+            }
+            if(!FocusedContainer.InsertItem(FocusedContainer.GlobalToSlotIndex(focusedSlot.TruePosition, focusedSlot.ItemSize), focusedSlot)){
                 focusedSlot.Container.ResetItem(focusedSlot);
             }
             focusedSlot.JustRotated = false;
             focusedSlot = null;
-            container.RemoveChild(HighlightPanel);
         }
+        Dragging = false;
 
     }
 
     public void DoubleClick(SlotContainer container, InputEventMouseButton button, ItemSlot item){
-        if(item.ItemHolder.TryGetModifier<ContainerModifier>(out ContainerModifier modifier)){
-            ContainerWindow window = this.ContainerWindowScene.Instantiate<ContainerWindow>();
+        if(item.ItemHolder.Item is ContainerItem){
+            BaseWindow window = this.ContainerWindowScene.Instantiate<ContainerWindow>();
             this.AddChild(window);
-            window.Modifier = modifier;
-            window.Position = this.Size / 2 - window.Size;
+            window.Itemslot = item;
+            this.Uis.Add(window);
+            window.Position = (this.Size / 2 - window.Size) + new Vector2(20, 20) * this.Uis.Count;
         }
     }
+
+    public void ResetItemPosition(ItemSlot item){
+        item.Container.ResetItem(item);
+    }    
 
     public object Save()
     {

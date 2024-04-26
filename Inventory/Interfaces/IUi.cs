@@ -1,4 +1,4 @@
 public interface IUi{
-    public void OpenUi();
-    public void CloseUi();
+    public void Open();
+    public void Close();
 }

@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://Inventory/Scripts/ContainerWindow.cs" id="1_4ddxa"]
 [ext_resource type="Texture2D" uid="uid://d2algvhs81lb2" path="res://Inventory/Sprites/Storage.tres" id="1_bavi6"]
-[ext_resource type="Script" path="res://Inventory/Scripts/SlotContainer.cs" id="2_ricim"]
+[ext_resource type="Script" path="res://Inventory/Scripts/WindowContainer.cs" id="3_ert2h"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lew50"]
 bg_color = Color(0, 0, 0, 1)
@@ -16,7 +16,7 @@ bg_color = Color(0.6, 0.6, 0.6, 0)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pingu"]
 bg_color = Color(1, 0, 0, 1)
 
-[node name="ContainerWindow" type="Panel" node_paths=PackedStringArray("Container")]
+[node name="ContainerWindow" type="Panel" node_paths=PackedStringArray("Container", "CloseButton")]
 custom_minimum_size = Vector2(74, 98)
 offset_right = 74.0
 offset_bottom = 98.0
@@ -25,7 +25,8 @@ size_flags_vertical = 3
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_lew50")
 script = ExtResource("1_4ddxa")
-Container = NodePath("Margin/Panel")
+Container = NodePath("Margin/WindowContainer")
+CloseButton = NodePath("Topbar/CloseButton")
 
 [node name="Topbar" type="Panel" parent="."]
 layout_mode = 1
@@ -64,6 +65,7 @@ theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 5
 theme_override_constants/margin_bottom = 5
 
-[node name="Panel" type="Panel" parent="Margin"]
+[node name="WindowContainer" type="Panel" parent="Margin" node_paths=PackedStringArray("window")]
 layout_mode = 2
-script = ExtResource("2_ricim")
+script = ExtResource("3_ert2h")
+window = NodePath("../..")

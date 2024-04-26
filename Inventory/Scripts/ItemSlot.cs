@@ -7,10 +7,9 @@ public partial class ItemSlot : Panel, ISaveAble{
     {
         this.ZIndex = 1;
         MouseFilter = MouseFilterEnum.Ignore;
-        this.TopLevel = true;
-
+        // this.TopLevel = true;
     }
-    public Vector2 TruePosition { get{ return this.Position + new Vector2(InventoryManager.SlotSize/2, InventoryManager.SlotSize/2); } }
+    public Vector2 TruePosition { get{ return this.GlobalPosition + new Vector2(InventoryManager.SlotSize/2, InventoryManager.SlotSize/2); } }
 
     private Vector2I _gridPosition;
     public Vector2I GridPosition

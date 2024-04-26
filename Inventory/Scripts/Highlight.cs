@@ -2,6 +2,19 @@ using Godot;
 
 public partial class Highlight : Panel{
     StyleBoxFlat styleBoxFlat = new StyleBoxFlat();
+
+    private bool _fits;
+    public bool Fits
+    {
+        get { return _fits; }
+        set { 
+            if(value != _fits){
+                _fits = value; 
+                this.SetColor(_fits ? Colors.Green : Colors.Red);
+            }
+        }
+    }
+    
     public Highlight()
     {
         this.AddThemeStyleboxOverride("panel", styleBoxFlat);
@@ -20,4 +33,5 @@ public partial class Highlight : Panel{
             this.styleBoxFlat.BgColor = color != null ? (Color)color : Colors.Green;
         }
     }
+
 }

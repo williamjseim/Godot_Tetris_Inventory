@@ -3,7 +3,7 @@ using Godot;
 
 public partial class SlotContainer : ContainerManager{
 
-    private ItemSlot[,] _slots;
+    protected ItemSlot[,] _slots;
     public ItemSlot[,] Slots
     {
         get { return _slots; }
@@ -16,6 +16,9 @@ public partial class SlotContainer : ContainerManager{
     public static event Action<SlotContainer, InputEventMouseButton, ItemSlot> MousePressed;
     public static event Action<SlotContainer, InputEventMouse> MouseReleased;
     public static event Action<SlotContainer, InputEventMouseButton, ItemSlot> MouseDoubleClick;
+
+    public Highlight HighlightPanel { get; protected set; }
+
     public override void _Ready()
     {
         base._Ready();
@@ -24,16 +27,20 @@ public partial class SlotContainer : ContainerManager{
         MouseEntered += MouseEnter;
         MouseExited += MouseExit;
         this.Slots = new ItemSlot[ContainerSize.X, ContainerSize.Y];
+        if(HighlightPanel == null){
+            HighlightPanel = new();
+        }
+        this.AddChild(HighlightPanel);
+        HighlightPanel.Visible = false;
     }
     Vector2I slot;
     private void MouseEnter(){
         MouseEnteredContainer?.Invoke(this);
-        // this.AddChild(_panel);
     }
 
     private void MouseExit(){
         MouseLeftContainer?.Invoke(this);
-        // this.RemoveChild(_panel);
+        this.HighlightPanel.Visible = false;
     }
 
     public override void _Draw()
@@ -53,16 +60,25 @@ public partial class SlotContainer : ContainerManager{
         return ((Vector2I)pos/InventoryManager.SlotSize).Clamp(Vector2I.Zero, this.ContainerSize - itemsize);
     }
 
+    public Vector2I GlobalToSlotIndex(Vector2 pos, Vector2I itemsize = new()){
+        pos = (pos - this.GlobalPosition).Abs();
+        return ((Vector2I)pos/InventoryManager.SlotSize).Clamp(Vector2I.Zero, this.ContainerSize - itemsize);
+    }
+
     public Vector2 GetSlotPosition(Vector2I index){
         return index*InventoryManager.SlotSize;
+    }
+
+    public Vector2 GetGlobalSlotPosition(Vector2I index){
+        return (index*InventoryManager.SlotSize + this.GlobalPosition).Abs();
     }
 
     public Vector2 MouseToSlotPosition(Vector2 mousePos, Vector2I itemsize = new Vector2I()){
         return GetSlotPosition(GetSlotIndex(mousePos).Clamp(Vector2I.Zero, this.ContainerSize - itemsize));
     }
 
-    public Vector2 IndexToGlobal(Vector2I index){
-        return index;
+    public Vector2 MouseToGlobalSlotPosition(Vector2 localMousePos, Vector2I itemsize = new Vector2I()){
+        return (GetSlotPosition(GetSlotIndex(localMousePos).Clamp(Vector2I.Zero, this.ContainerSize - itemsize)) + this.GlobalPosition).Abs();
     }
 
     public override void Input(InputEvent @event){
@@ -75,20 +91,22 @@ public partial class SlotContainer : ContainerManager{
                 }
             }
             else if(button.ButtonMask == MouseButtonMask.Left && button.IsPressed()){
-                if(this.Slots[index.X, index.Y] != null)
+                if(this.Slots[index.X, index.Y] != null){
                     MousePressed?.Invoke(this, button, Slots[index.X, index.Y]);
+                }
             }
             else if(button.ButtonIndex == MouseButton.Left && button.IsReleased()){
                 MouseReleased?.Invoke(this, button);
+                this.HighlightPanel.Visible = false;
             }
             else if(button.ButtonIndex == MouseButton.Right && button.IsPressed()){
                 if(this.Slots[index.X, index.Y] != null)
-                   GD.Print(this.Slots[index.X, index.Y].ItemHolder.StaticModifiers, " ajsafoiso");
+                   GD.Print(this.Slots[index.X, index.Y].ItemHolder.Item.Name, " item name");
             }
         }
     }
 
-    public bool InsertItem(ItemHolder item){
+    public virtual bool InsertItem(ItemHolder item){
         if(CheckForExistingItem(item, out ItemSlot slot)){
             int i = slot.CombineItems(item);
             if(i <= 0){
@@ -106,7 +124,7 @@ public partial class SlotContainer : ContainerManager{
                     itemslot.Container = this;
                     itemslot.ItemHolder = item;
                     itemslot.Size = item.Item.ItemSize * InventoryManager.SlotSize;
-                    itemslot.Position = new Vector2I(x, y) * InventoryManager.SlotSize;
+                    itemslot.Position = this.GetGlobalSlotPosition(new Vector2I(x,y)); //new Vector2I(x, y) * InventoryManager.SlotSize;
                     PlaceItem(new(x,y), itemslot);
                     this.AddChild(itemslot);
                     return true;
@@ -131,11 +149,11 @@ public partial class SlotContainer : ContainerManager{
         return false;
     }
 
-    public bool InsertItem(Vector2I truePos, ItemSlot itemslot){
+    public virtual bool InsertItem(Vector2I truePos, ItemSlot itemslot){
         if(ItemFits(truePos, itemslot)){
             itemslot.Container.RemoveItem(itemslot);
             itemslot.GridPosition = truePos;
-            itemslot.Position = truePos * InventoryManager.SlotSize;
+            itemslot.Position = (truePos * InventoryManager.SlotSize + this.GlobalPosition).Abs();
             PlaceItem(truePos, itemslot);
             itemslot.Container = this;
             return true;
@@ -143,7 +161,7 @@ public partial class SlotContainer : ContainerManager{
         return false;
     }
 
-    public bool ItemFits(Vector2I truePos, BaseItem item){
+    public virtual bool ItemFits(Vector2I truePos, BaseItem item){
         for (int y = truePos.Y; y < truePos.Y + item.ItemSize.Y; y++)
         {   
             for (int x = truePos.X; x < truePos.X + item.ItemSize.X; x++)
@@ -156,8 +174,7 @@ public partial class SlotContainer : ContainerManager{
         return true;
     }
 
-    public bool ItemFits(Vector2I truePos, ItemSlot itemslot){
-        GD.Print(itemslot.ItemSize);
+    public virtual bool ItemFits(Vector2I truePos, ItemSlot itemslot){
         for (int y = truePos.Y; y < truePos.Y + itemslot.ItemSize.Y; y++)
         {   
             for (int x = truePos.X; x < truePos.X + itemslot.ItemSize.X; x++)
@@ -192,17 +209,26 @@ public partial class SlotContainer : ContainerManager{
         {
             for (int x = itemSlot.GridPosition.X; x < itemSlot.GridPosition.X + trueSize.X ; x++)
             {
-                // GD.Print(x, y, " removed");
                 this.Slots[x,y] = null;
             }
             
         }
     }
 
+    public void Highlight(ItemSlot itemslot){
+        if(!this.HighlightPanel.Visible){
+            this.HighlightPanel.Show();
+        }
+        Vector2I index = GlobalToSlotIndex(itemslot.TruePosition, itemslot.ItemSize);
+        this.HighlightPanel.Position = GetSlotPosition(index);
+        this.HighlightPanel.Size = itemslot.ItemSize * InventoryManager.SlotSize;
+        this.HighlightPanel.Fits = ItemFits(index, itemslot);
+    }
+
     public void ResetItem(ItemSlot itemSlot){
         if(itemSlot.JustRotated){
             itemSlot.Rotated = !itemSlot.Rotated;
         }
-        itemSlot.Position = GetSlotPosition(itemSlot.GridPosition);
+        itemSlot.Position = GetGlobalSlotPosition(itemSlot.GridPosition);
     }
 }
