@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 
@@ -9,15 +10,19 @@ public struct ItemHolder
   public ItemHolder(){
     this._item = null;
     this._amount = 0;
-    this.StaticModifiers = new ItemModifier[0];
+    this.StaticModifiers = new();
     this.AddedModifiers = new ItemModifier[0];
   }
 
   public ItemHolder(BaseItem item, int amount)
   {
     this._item = item;
-    this.StaticModifiers = item.Modifiers;
-    GD.Print(item.Modifiers, " modifiers");
+    if(item.Modifiers != null){
+      this.StaticModifiers = item.Modifiers.ToList();
+    }
+    else{
+      StaticModifiers = null;
+    }
     this._amount = amount;
     this.AddedModifiers = new ItemModifier[0];
   }
@@ -46,7 +51,7 @@ public struct ItemHolder
     private set { name = value; }
   }
 
-  public ItemModifier[] StaticModifiers;
+  public List<ItemModifier> StaticModifiers;
   public ItemModifier[] AddedModifiers;
   
   /// <summary>
@@ -72,6 +77,11 @@ public struct ItemHolder
     var test = StaticModifiers.Where(i=>i is ContainerModifier).First();
     GD.Print(test);
     return modifier != null;
+  }
+
+  public override string ToString()
+  {
+    return $"Item name {Item.Name} Item id ${Item.Id} amount of items ${Amount}";
   }
 
     public static ItemHolder Empty => new ItemHolder();

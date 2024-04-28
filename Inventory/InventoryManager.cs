@@ -4,19 +4,31 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
-public partial class InventoryManager : Panel, ISaveAble
+public partial class InventoryManager : ContainerManager, ISaveAble
 {
     [Export] PackedScene ContainerWindowScene;
-
-    List<BaseWindow> Uis = new();
     public static PackedScene containerScene { get; protected set;} = ResourceLoader.Load<PackedScene>("res://Inventory/Scenes/Slot.tscn");
     public static int SlotSize = 64;
     [Export] SlotContainer slotContainer;
-    SlotContainer FocusedContainer;
+    SlotContainer _focusedContainer;
     BaseWindow FocusedWindow;
-    public bool Dragging { get; set; }
+    Vector2 windowPos;
+    private bool _dragging;
+    public bool Dragging { get { return _dragging; } set {
+        _dragging = value;
+        if(_focusedSlot != null){
+            if(Dragging){
+                _focusedSlot.TopLevel = true;
+                _focusedSlot.JustRotated = false;
+                _focusedSlot.GlobalPosition = (GetLocalMousePosition() - _focusedSlot.Size/2);
+            }
+            else{
+                _focusedSlot.TopLevel = false;
+            }
+        }
+    }}
 
-    List<ContainerWindow> OpenedWindows = new(10);
+    LinkedList<BaseWindow> OpenedWindows = new();
     
     private ItemSlot _focusedSlot;
     public ItemSlot focusedSlot
@@ -26,11 +38,7 @@ public partial class InventoryManager : Panel, ISaveAble
             if(_focusedSlot != null){
                 _focusedSlot.TopLevel = false;
             }
-            else{
-                value.TopLevel = true;
-            }
             _focusedSlot = value;
-            
         }
     }
     
@@ -38,17 +46,20 @@ public partial class InventoryManager : Panel, ISaveAble
     {
         base._Ready();
         ItemDatabase.Instance.LoadItems();
-        SlotContainer.MouseEnteredContainer += (e)=>{ FocusedContainer = e; };
-        SlotContainer.MouseLeftContainer += (e)=>{ FocusedContainer = null; };
-        SlotContainer.MouseMotion += MouseMotion;
+        ContainerManager.MouseMotion += MouseMotion;
+        SlotContainer.MouseEnteredContainer += (e)=>{ _focusedContainer = e; };
+        SlotContainer.MouseLeftContainer += (e)=>{ _focusedContainer = null; };
         SlotContainer.MouseEnteredContainer += ContainerEnter;
         SlotContainer.MouseLeftContainer += ContainerExit;
         SlotContainer.MousePressed += MousePressed;
         SlotContainer.MouseReleased += MouseReleased;
         SlotContainer.MouseDoubleClick += this.DoubleClick;
+        BaseWindow.Pressed += WindowPressed;
+        BaseWindow.Released += WindowReleased;
+        BaseWindow.CloseEvent += WindowClosed;
         this.InsertItem(ItemDatabase.Instance.GetItem("BasicRod"), slotContainer);
         this.InsertItem(ItemDatabase.Instance.GetItem("Fish"), slotContainer);
-        this.InsertItem(ItemDatabase.Instance.GetItem("InternalStorage"), slotContainer);
+        this.InsertItem(ItemDatabase.Instance.GetItem("TackleBox"), slotContainer);
     }
 
     public override void _Process(double delta)
@@ -59,69 +70,88 @@ public partial class InventoryManager : Panel, ISaveAble
                 focusedSlot.Rotated = !focusedSlot.Rotated;
                 var local = GetGlobalMousePosition();
                 focusedSlot.Position = local - focusedSlot.Size/2;
+                _focusedContainer.Highlight(focusedSlot);
+            }
+        }
+        if(Input.IsActionJustPressed("Close Ui")){
+            if(OpenedWindows.Count > 0){
+                OpenedWindows.Last().Close();
+                OpenedWindows.RemoveLast();
+
             }
         }
     }
 
+    public void WindowPressed(BaseWindow window, InputEventMouse mouse){
+        if(OpenedWindows.Last() != window){
+            OpenedWindows.Remove(window);
+            OpenedWindows.AddLast(window);
+        }
+        FocusedWindow = window;
+        windowPos = mouse.Position;
+    }
+
+    public void WindowReleased(BaseWindow window, InputEventMouse mouse){
+        FocusedWindow = null;
+    }
+
     public void ContainerEnter(SlotContainer container){
-        if(FocusedContainer != container){
-            FocusedContainer = container;
-            focusedSlot.Container.RemoveChild(focusedSlot);
-            container.AddChild(focusedSlot);
+        if(_focusedContainer != container){
+            _focusedContainer = container;
         }
     }
 
     public void ContainerExit(SlotContainer container){
-        FocusedContainer = null;
+        _focusedContainer = null;
     }
 
     public void InsertItem(BaseItem item, SlotContainer container){
         container.InsertItem(new ItemHolder(item, 1));
     }
-
-    public void MouseMotion(InputEventMouseMotion motion){
+    public new void MouseMotion(InputEventMouseMotion motion){
         if(focusedSlot != null){
-            focusedSlot.Position = motion.GlobalPosition - focusedSlot.Size/2;
+            Dragging = true;
             if(Dragging){
-                if(FocusedContainer != null){
-                    // Vector2I cellPosition = FocusedContainer.GetSlotIndex(motion.Position, focusedSlot == null ? Vector2I.Zero : focusedSlot.ItemSize);
-                    FocusedContainer.Highlight(focusedSlot);
+                focusedSlot.Position = motion.GlobalPosition - focusedSlot.Size/2;
+                if(_focusedContainer != null){
+                    _focusedContainer.Highlight(focusedSlot);
                 }
             }
+        }
+        else if(FocusedWindow != null){
+            FocusedWindow.GlobalPosition = motion.GlobalPosition - windowPos;
         }
     }
 
     public void MousePressed(SlotContainer container, InputEventMouseButton button, ItemSlot itemslot){
         focusedSlot = itemslot;
-        Dragging = true;
     }
 
     public void MouseReleased(SlotContainer container, InputEventMouse mouse){
-        
         if(focusedSlot != null){
-            if(FocusedContainer == null){
+            if(_focusedContainer == null){
                 this.ResetItemPosition(focusedSlot);
-                focusedSlot = null;
-                return;
             }
-            if(!FocusedContainer.InsertItem(FocusedContainer.GlobalToSlotIndex(focusedSlot.TruePosition, focusedSlot.ItemSize), focusedSlot)){
+            else if(!_focusedContainer.InsertItem(_focusedContainer.GlobalToSlotIndex(focusedSlot.TruePosition, focusedSlot.ItemSize), focusedSlot)){
                 focusedSlot.Container.ResetItem(focusedSlot);
             }
-            focusedSlot.JustRotated = false;
             focusedSlot = null;
         }
         Dragging = false;
-
     }
 
     public void DoubleClick(SlotContainer container, InputEventMouseButton button, ItemSlot item){
-        if(item.ItemHolder.Item is ContainerItem){
+        if(item.ItemHolder.Item is ContainerItem containeritem && !this.OpenedWindows.Where(i=>i.Itemslot == item).Any()){
             BaseWindow window = this.ContainerWindowScene.Instantiate<ContainerWindow>();
             this.AddChild(window);
             window.Itemslot = item;
-            this.Uis.Add(window);
-            window.Position = (this.Size / 2 - window.Size) + new Vector2(20, 20) * this.Uis.Count;
+            this.OpenedWindows.AddLast(window);
+            window.Position = (this.Size / 2 - window.Size) + new Vector2(20, 20) * this.OpenedWindows.Count;
         }
+    }
+
+    public void WindowClosed(BaseWindow window){
+        this.OpenedWindows.Remove(window);
     }
 
     public void ResetItemPosition(ItemSlot item){

@@ -27,7 +27,6 @@ public partial class ItemSlot : Panel, ISaveAble{
         set { _container = value; }
     }
     
-    
     public Vector2I SlotSize { get { return (Vector2I)this.Size / 64; } set { this.Size = value * 64; } }
     private ItemHolder _ItemHolder;
     public ItemHolder ItemHolder
@@ -52,7 +51,7 @@ public partial class ItemSlot : Panel, ISaveAble{
     private bool _rotated = false;
     public bool Rotated { get { return _rotated;} set {
         _rotated = value;
-        _justRotated = true;
+        _justRotated = !_justRotated;
         if(value == true){
             this.itemsprite.Texture = this.ItemHolder.Item.RotatedItemTexture;
             this.SlotSize = this.ItemSize;

@@ -34,11 +34,11 @@ public partial class SlotContainer : ContainerManager{
         HighlightPanel.Visible = false;
     }
     Vector2I slot;
-    private void MouseEnter(){
+    protected virtual void MouseEnter(){
         MouseEnteredContainer?.Invoke(this);
     }
 
-    private void MouseExit(){
+    protected virtual void MouseExit(){
         MouseLeftContainer?.Invoke(this);
         this.HighlightPanel.Visible = false;
     }
@@ -81,8 +81,7 @@ public partial class SlotContainer : ContainerManager{
         return (GetSlotPosition(GetSlotIndex(localMousePos).Clamp(Vector2I.Zero, this.ContainerSize - itemsize)) + this.GlobalPosition).Abs();
     }
 
-    public override void Input(InputEvent @event){
-        base.Input(@event);
+    public override void ContainerInput(InputEvent @event){
         if(@event is InputEventMouseButton button){
             Vector2I index = GetSlotIndex(button.Position);
             if(button.DoubleClick){
@@ -104,6 +103,14 @@ public partial class SlotContainer : ContainerManager{
                    GD.Print(this.Slots[index.X, index.Y].ItemHolder.Item.Name, " item name");
             }
         }
+        if(@event is InputEventMouseMotion motion){
+            this.MouseMotionInvoke(motion);
+        }
+    }
+
+    protected override void MouseMotionInvoke(InputEventMouseMotion motion)
+    {
+        base.MouseMotionInvoke(motion);
     }
 
     public virtual bool InsertItem(ItemHolder item){
@@ -124,7 +131,7 @@ public partial class SlotContainer : ContainerManager{
                     itemslot.Container = this;
                     itemslot.ItemHolder = item;
                     itemslot.Size = item.Item.ItemSize * InventoryManager.SlotSize;
-                    itemslot.Position = this.GetGlobalSlotPosition(new Vector2I(x,y)); //new Vector2I(x, y) * InventoryManager.SlotSize;
+                    itemslot.Position = this.GetSlotPosition(new Vector2I(x,y)); //new Vector2I(x, y) * InventoryManager.SlotSize;
                     PlaceItem(new(x,y), itemslot);
                     this.AddChild(itemslot);
                     return true;
@@ -151,9 +158,13 @@ public partial class SlotContainer : ContainerManager{
 
     public virtual bool InsertItem(Vector2I truePos, ItemSlot itemslot){
         if(ItemFits(truePos, itemslot)){
+            if(itemslot.Container != this){
+                itemslot.Container.RemoveChild(itemslot);
+                this.AddChild(itemslot);
+            }
             itemslot.Container.RemoveItem(itemslot);
             itemslot.GridPosition = truePos;
-            itemslot.Position = (truePos * InventoryManager.SlotSize + this.GlobalPosition).Abs();
+            itemslot.Position = truePos * InventoryManager.SlotSize;
             PlaceItem(truePos, itemslot);
             itemslot.Container = this;
             return true;
@@ -192,6 +203,7 @@ public partial class SlotContainer : ContainerManager{
         {   
             for (int x = truePos.X; x < truePos.X + itemslot.ItemSize.X; x++)
             {   
+                // if(x == truePos.X && y == truePos.Y){}
                 Slots[x,y] = itemslot;
             }
         }
@@ -229,6 +241,6 @@ public partial class SlotContainer : ContainerManager{
         if(itemSlot.JustRotated){
             itemSlot.Rotated = !itemSlot.Rotated;
         }
-        itemSlot.Position = GetGlobalSlotPosition(itemSlot.GridPosition);
+        itemSlot.Position = GetSlotPosition(itemSlot.GridPosition);
     }
 }

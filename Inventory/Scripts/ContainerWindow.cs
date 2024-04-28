@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using Godot;
 
 public partial class ContainerWindow : BaseWindow
@@ -8,7 +10,7 @@ public partial class ContainerWindow : BaseWindow
 		base._Ready();
 	}
 
-    public override void SetupModifiers(ItemModifier[] modifiers)
+    public override void SetupModifiers(List<ItemModifier> modifiers)
     {
 		foreach (var modifier in modifiers)
 		{
@@ -16,12 +18,24 @@ public partial class ContainerWindow : BaseWindow
 				this.ContainerModifier = containerModifier;
 			}
 		}
+		for (var X = 0; X < _containerModifier.ContainerSize.X; X++)
+		{
+			if(_containerModifier.grid[X,0] != null){
+				Container.AddChild(_containerModifier.grid[X,0]);
+				_containerModifier.grid[X,0].Container = Container;
+			}
+		}
     }
 
     public override void Close()
     {
-		this.Itemslot.ItemHolder.TryGetModifier<ContainerModifier>(out ContainerModifier modifier);
-		modifier = this.ContainerModifier;
+		base.Close();
+		for (var X = 0; X < _containerModifier.ContainerSize.X; X++)
+		{
+			if(_containerModifier.grid[X,0] != null){
+				Container.RemoveChild(_containerModifier.grid[X,0]);
+			}
+		}
 		this.QueueFree();
     }
 
@@ -36,6 +50,16 @@ public partial class ContainerWindow : BaseWindow
 			this.Size += (value.ContainerSize - Vector2I.One) * InventoryManager.SlotSize;
 		}
 	}
-	
 
+	public bool whitelisted(string itemTypeName){
+		if(_containerModifier.FilterWhiteList != null && _containerModifier.FilterWhiteList.Length > 0){
+			return this._containerModifier.FilterBlackList.Contains(itemTypeName);
+		}
+		return true;
+	}
+	public bool BlackListed(string itemTypeName){
+		if(_containerModifier.FilterBlackList == null)
+			return false;
+		return this._containerModifier.FilterBlackList.Contains(itemTypeName);
+	}
 }

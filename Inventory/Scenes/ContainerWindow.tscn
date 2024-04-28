@@ -16,16 +16,17 @@ bg_color = Color(0.6, 0.6, 0.6, 0)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pingu"]
 bg_color = Color(1, 0, 0, 1)
 
-[node name="ContainerWindow" type="Panel" node_paths=PackedStringArray("Container", "CloseButton")]
+[node name="ContainerWindow" type="Panel" node_paths=PackedStringArray("Container", "Topbar", "CloseButton")]
 custom_minimum_size = Vector2(74, 98)
 offset_right = 74.0
 offset_bottom = 98.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
-mouse_filter = 2
+mouse_filter = 1
 theme_override_styles/panel = SubResource("StyleBoxFlat_lew50")
 script = ExtResource("1_4ddxa")
 Container = NodePath("Margin/WindowContainer")
+Topbar = NodePath("Topbar")
 CloseButton = NodePath("Topbar/CloseButton")
 
 [node name="Topbar" type="Panel" parent="."]
@@ -35,6 +36,7 @@ anchor_right = 1.0
 offset_bottom = 24.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_bh41b")
 
 [node name="CloseButton" type="Button" parent="Topbar"]

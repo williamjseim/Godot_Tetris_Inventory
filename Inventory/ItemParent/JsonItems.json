@@ -26,19 +26,28 @@
   },
   {
     "$type": "ContainerItem, Tetris_Inventory",
-    "Name": "InternalStorage",
-    "Id": "InternalStorage",
+    "Name": "Tackle Box",
+    "Id": "TackleBox",
     "SpritePath": "res://Inventory/Sprites/Storage.tres",
     "StackSize": 999,
     "ItemSize": {
       "$type": "Godot.Vector2I, GodotSharp",
-      "X": 1,
-      "Y": 1
+      "X": 2,
+      "Y": 2
     },
-    "InternalStorageSize":{
-      "$type": "Godot.Vector2I, GodotSharp",
-      "X": 4,
-      "Y": 4
-    }
-  },
+    "Modifiers":[
+      {
+        "$type": "ContainerModifier, Tetris_Inventory",
+        "ContainerSize":{
+          "$type": "Godot.Vector2I, GodotSharp",
+          "X": 4,
+          "Y": 4
+        },
+        "FilterWhiteList":[
+        ],
+        "FilterBlackList":[
+        ]
+      }
+    ]
+  }
 ]

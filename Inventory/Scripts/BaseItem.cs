@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Godot;
 using Newtonsoft.Json;
 
@@ -10,7 +11,7 @@ public class BaseItem
 	public virtual Texture2D ItemTexture { get;  set; } // item image
 	public virtual Texture2D RotatedItemTexture { get;  set; } // item image
 
-  public virtual ItemModifier[] Modifiers { get; set; }
+  public virtual List<ItemModifier> Modifiers { get; set; }
   public string SpritePath { set { 
       ItemTexture = ResourceLoader.Load<Texture2D>(value);
       Image image = this.ItemTexture.GetImage();
