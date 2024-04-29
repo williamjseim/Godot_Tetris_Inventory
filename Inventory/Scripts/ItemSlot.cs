@@ -1,6 +1,9 @@
 using System;
 using Godot;
 
+/// <summary>
+/// itemslot is the should just be the graphical resprisitation of items in the inventory
+/// </summary>
 public partial class ItemSlot : Panel, ISaveAble{
 
     public ItemSlot()
@@ -9,6 +12,10 @@ public partial class ItemSlot : Panel, ISaveAble{
         MouseFilter = MouseFilterEnum.Ignore;
         // this.TopLevel = true;
     }
+
+    [Export] Label amountLabel;
+    [Export] VBoxContainer ModifierContainer;
+
     public Vector2 TruePosition { get{ return this.GlobalPosition + new Vector2(InventoryManager.SlotSize/2, InventoryManager.SlotSize/2); } }
 
     private Vector2I _gridPosition;

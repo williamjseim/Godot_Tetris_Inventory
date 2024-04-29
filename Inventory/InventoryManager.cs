@@ -77,7 +77,6 @@ public partial class InventoryManager : ContainerManager, ISaveAble
             if(OpenedWindows.Count > 0){
                 OpenedWindows.Last().Close();
                 OpenedWindows.RemoveLast();
-
             }
         }
     }

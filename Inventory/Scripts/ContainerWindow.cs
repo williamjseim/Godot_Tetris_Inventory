@@ -58,8 +58,9 @@ public partial class ContainerWindow : BaseWindow
 		return true;
 	}
 	public bool BlackListed(string itemTypeName){
-		if(_containerModifier.FilterBlackList == null)
+		if(_containerModifier.FilterBlackList == null){
 			return false;
+		}
 		return this._containerModifier.FilterBlackList.Contains(itemTypeName);
 	}
 }

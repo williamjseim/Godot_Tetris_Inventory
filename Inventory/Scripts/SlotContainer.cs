@@ -33,7 +33,6 @@ public partial class SlotContainer : ContainerManager{
         this.AddChild(HighlightPanel);
         HighlightPanel.Visible = false;
     }
-    Vector2I slot;
     protected virtual void MouseEnter(){
         MouseEnteredContainer?.Invoke(this);
     }
