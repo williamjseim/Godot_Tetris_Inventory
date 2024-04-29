@@ -56,7 +56,7 @@ public class ItemDatabase
         // }
 
         BaseItem[] array;
-        using(StreamReader sr = new StreamReader(@".\Inventory\ItemParent\JsonItems.menace"))
+        using(StreamReader sr = new StreamReader(@".\Inventory\ItemParent\JsonItems.json"))
         using(JsonReader reader = new JsonTextReader(sr)){
             array = serializer.Deserialize<BaseItem[]>(reader);
         }
@@ -66,7 +66,6 @@ public class ItemDatabase
         string itemParent = foldersplit[foldersplit.Length-2];
         foreach (var item in array)
         {
-            GD.Print(item.Id);
             if(item.Id != string.Empty && item.Id != BaseItem.Empty){
                 try{
                     this.Items.Add(item.Id, item);

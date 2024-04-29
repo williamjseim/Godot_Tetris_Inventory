@@ -1,0 +1,73 @@
+[gd_scene load_steps=8 format=3 uid="uid://b566lwnq6v5wi"]
+
+[ext_resource type="Script" path="res://Inventory/Scripts/ContainerWindow.cs" id="1_4ddxa"]
+[ext_resource type="Texture2D" uid="uid://d2algvhs81lb2" path="res://Inventory/Sprites/Storage.tres" id="1_bavi6"]
+[ext_resource type="Script" path="res://Inventory/Scripts/WindowContainer.cs" id="3_ert2h"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lew50"]
+bg_color = Color(0, 0, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bh41b"]
+bg_color = Color(0.415686, 0.415686, 0.415686, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0xwoa"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pingu"]
+bg_color = Color(1, 0, 0, 1)
+
+[node name="ContainerWindow" type="Panel" node_paths=PackedStringArray("Container", "Topbar", "CloseButton")]
+custom_minimum_size = Vector2(74, 98)
+offset_right = 74.0
+offset_bottom = 98.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 1
+theme_override_styles/panel = SubResource("StyleBoxFlat_lew50")
+script = ExtResource("1_4ddxa")
+Container = NodePath("Margin/WindowContainer")
+Topbar = NodePath("Topbar")
+CloseButton = NodePath("Topbar/CloseButton")
+
+[node name="Topbar" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+offset_bottom = 24.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bh41b")
+
+[node name="CloseButton" type="Button" parent="Topbar"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -24.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_0xwoa")
+theme_override_styles/hover = SubResource("StyleBoxFlat_pingu")
+icon = ExtResource("1_bavi6")
+icon_alignment = 1
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 24.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="WindowContainer" type="Panel" parent="Margin" node_paths=PackedStringArray("window")]
+layout_mode = 2
+script = ExtResource("3_ert2h")
+window = NodePath("../..")

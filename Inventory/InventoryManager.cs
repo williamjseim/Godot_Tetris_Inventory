@@ -1,163 +1,170 @@
 using Godot;
 using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 
-public partial class InventoryManager : ContainerManager
+public partial class InventoryManager : ContainerManager, ISaveAble
 {
-    [Export] PackedScene itemslotScene;
+    [Export] PackedScene ContainerWindowScene;
+    public static PackedScene containerScene { get; protected set;} = ResourceLoader.Load<PackedScene>("res://Inventory/Scenes/Slot.tscn");
+    public static int SlotSize = 64;
+    [Export] SlotContainer slotContainer;
+    SlotContainer _focusedContainer;
+    BaseWindow FocusedWindow;
+    Vector2 windowPos;
+    private bool _dragging;
+    public bool Dragging { get { return _dragging; } set {
+        _dragging = value;
+        if(_focusedSlot != null){
+            if(Dragging){
+                _focusedSlot.TopLevel = true;
+                _focusedSlot.JustRotated = false;
+                _focusedSlot.GlobalPosition = (GetLocalMousePosition() - _focusedSlot.Size/2);
+            }
+            else{
+                _focusedSlot.TopLevel = false;
+            }
+        }
+    }}
+
+    LinkedList<BaseWindow> OpenedWindows = new();
+    
+    private ItemSlot _focusedSlot;
+    public ItemSlot focusedSlot
+    {
+        get { return _focusedSlot; }
+        set {
+            if(_focusedSlot != null){
+                _focusedSlot.TopLevel = false;
+            }
+            _focusedSlot = value;
+        }
+    }
+    
     public override void _Ready()
     {
         base._Ready();
         ItemDatabase.Instance.LoadItems();
-        ItemSlot.DragBegin += (s)=>{ 
-            _itemSlotBeingDragged = s;
-            RemoveItem(s.GridPosition, s.ItemSize);
-            HighLightSlots(GetTruePosition(focusedSlot.GridPosition, _itemSlotBeingDragged), s);
-        };
-        ItemSlot.DragEnd += (s)=>{ _itemSlotBeingDragged = null; };
-        Slot.Clicked += DropItem;
-        Slot.MouseEnter += (slot)=>{
-            if(_itemSlotBeingDragged != null){
-                this.focusedSlot = slot;
-                HighLightSlots(GetTruePosition(slot.GridPosition, _itemSlotBeingDragged), _itemSlotBeingDragged);
-            }
-        };
-        Slot.MouseExit += (slot)=>{ 
-            if(_itemSlotBeingDragged != null){
-                focusedSlot = null;
-                DeHighlightSlots(GetTruePosition(slot.GridPosition, _itemSlotBeingDragged), _itemSlotBeingDragged);
-            }
-        };
-        InsertItem(ItemDatabase.Instance.GetItem($"BasicRod"));
-        InsertItem(ItemDatabase.Instance.GetItem($"Fish"));
-        InsertItem(ItemDatabase.Instance.GetItem($"InternalStorage"));
+        ContainerManager.MouseMotion += MouseMotion;
+        SlotContainer.MouseEnteredContainer += (e)=>{ _focusedContainer = e; };
+        SlotContainer.MouseLeftContainer += (e)=>{ _focusedContainer = null; };
+        SlotContainer.MouseEnteredContainer += ContainerEnter;
+        SlotContainer.MouseLeftContainer += ContainerExit;
+        SlotContainer.MousePressed += MousePressed;
+        SlotContainer.MouseReleased += MouseReleased;
+        SlotContainer.MouseDoubleClick += this.DoubleClick;
+        BaseWindow.Pressed += WindowPressed;
+        BaseWindow.Released += WindowReleased;
+        BaseWindow.CloseEvent += WindowClosed;
+        this.InsertItem(ItemDatabase.Instance.GetItem("BasicRod"), slotContainer);
+        this.InsertItem(ItemDatabase.Instance.GetItem("Fish"), slotContainer);
+        this.InsertItem(ItemDatabase.Instance.GetItem("TackleBox"), slotContainer);
     }
-
-
-    Slot focusedSlot = null;
-    ItemSlot _itemSlotBeingDragged;
 
     public override void _Process(double delta)
     {
-        if(Input.IsKeyPressed(Key.H)){
-            BaseItem item = ItemDatabase.Instance.GetItem($"BasicRod");
-            InsertItem(item);
+        base._Process(delta);
+        if(Input.IsActionJustPressed("Rotate")){
+            if(focusedSlot != null){
+                focusedSlot.Rotated = !focusedSlot.Rotated;
+                var local = GetGlobalMousePosition();
+                focusedSlot.Position = local - focusedSlot.Size/2;
+                _focusedContainer.Highlight(focusedSlot);
+            }
         }
-        if (Input.IsActionJustPressed("Rotate"))
-        {
-            if(_itemSlotBeingDragged != null){
-                DeHighlightSlots(GetTruePosition(focusedSlot.GridPosition, _itemSlotBeingDragged), _itemSlotBeingDragged);
-                _itemSlotBeingDragged.Rotated = !_itemSlotBeingDragged.Rotated;
+        if(Input.IsActionJustPressed("Close Ui")){
+            if(OpenedWindows.Count > 0){
+                OpenedWindows.Last().Close();
+                OpenedWindows.RemoveLast();
             }
         }
     }
 
-    Vector2I GetTruePosition(Vector2I gridPos, ItemSlot item){
-        int x = Math.Clamp(gridPos.X - item.ItemSize.X / 2, 0, inventorySize.X - item.ItemSize.X);
-        int y = Math.Clamp(gridPos.Y - item.ItemSize.Y / 2, 0, inventorySize.Y - item.ItemSize.Y);
-        Vector2I truePos = new Vector2I(x, y);
-        return truePos;
+    public void WindowPressed(BaseWindow window, InputEventMouse mouse){
+        if(OpenedWindows.Last() != window){
+            OpenedWindows.Remove(window);
+            OpenedWindows.AddLast(window);
+        }
+        FocusedWindow = window;
+        windowPos = mouse.Position;
     }
 
-    public void HighLightSlots(Vector2I truePos, ItemSlot slot){
-        bool fits = ItemFits(truePos, slot.ItemSize);
-        for (int y = truePos.Y; y < truePos.Y+slot.ItemSize.Y; y++)
-        {
-            for (int x = truePos.X; x < truePos.X+slot.ItemSize.X; x++)
-            {
-                try{
-                    Slots[x,y].HighLight(fits ? Colors.Green : Colors.Red);
-                }
-                catch( IndexOutOfRangeException ex) { GD.PrintErr(x,y);}
-            }
+    public void WindowReleased(BaseWindow window, InputEventMouse mouse){
+        FocusedWindow = null;
+    }
+
+    public void ContainerEnter(SlotContainer container){
+        if(_focusedContainer != container){
+            _focusedContainer = container;
         }
     }
 
-    public void DeHighlightSlots(Vector2I truePos, ItemSlot slot){
-        for (int y = truePos.Y; y < truePos.Y+slot.ItemSize.Y; y++)
-        {
-            for (int x = truePos.X; x < truePos.X+slot.ItemSize.X; x++)
-            {
-                Slots[x,y].DeHighLight(Slots[x,y].IsEmpty ? Colors.Transparent : Colors.Purple);
-            }
-        }
+    public void ContainerExit(SlotContainer container){
+        _focusedContainer = null;
     }
 
-    public bool InsertItem(BaseItem item){
-        for (int y = 0; y < this.inventorySize.Y; y++)
-        {
-            for (int x = 0; x < this.inventorySize.X; x++)
-            {
-                if(ItemFits(new Vector2I(x,y), item.ItemSize)){
-                    PlaceItem(item, 1, new Vector2I(x,y));
-                    return true;
+    public void InsertItem(BaseItem item, SlotContainer container){
+        container.InsertItem(new ItemHolder(item, 1));
+    }
+    public new void MouseMotion(InputEventMouseMotion motion){
+        if(focusedSlot != null){
+            Dragging = true;
+            if(Dragging){
+                focusedSlot.Position = motion.GlobalPosition - focusedSlot.Size/2;
+                if(_focusedContainer != null){
+                    _focusedContainer.Highlight(focusedSlot);
                 }
             }
         }
-        return false;
-    }
-
-    public bool ItemFits(Vector2I pos, Vector2I itemSize){
-        for (int Y = pos.Y; Y < itemSize.Y + pos.Y; Y++)
-        {
-            for (var X = pos.X; X < itemSize.X + pos.X; X++)
-            {
-                if(!this.Slots[X,Y].IsEmpty){
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    public bool PlaceItem(BaseItem item, int amount, Vector2I pos){
-        ItemSlot slot = itemslotScene.Instantiate<ItemSlot>();
-        slot.ItemHolder = new ItemHolder(item, amount);
-        slot.GridPosition = pos;
-        this.container.AddChild(slot);
-        slot.Position = pos * 64;
-        GD.Print(Slots[pos.X,pos.Y].Position, pos);
-        for (int y = pos.Y; y < pos.Y+item.ItemSize.Y; y++)
-        {
-            for (int x = pos.X; x < pos.X+item.ItemSize.X; x++)
-            {
-                Slots[x, y].ItemSlot = slot;
-                Slots[x, y].HighLight(Colors.Purple);
-            }
-        }
-        return false;
-    }
-
-    public void RemoveItem(Vector2I pos, Vector2I itemSize){
-        for (int y = pos.Y; y < pos.Y + itemSize.Y; y++)
-        {
-            for (int x = pos.X; x < pos.X + itemSize.X; x++)
-            {
-                Slots[x,y].ItemSlot = null;
-            }
+        else if(FocusedWindow != null){
+            FocusedWindow.GlobalPosition = motion.GlobalPosition - windowPos;
         }
     }
 
-    public void DropItem(Slot slot){
-        if(_itemSlotBeingDragged != null){
-            Vector2I truePos = GetTruePosition(slot.GridPosition, _itemSlotBeingDragged);
-            Vector2I itemSize = _itemSlotBeingDragged.ItemSize;
-            if(ItemFits(truePos, itemSize)){
-                RemoveItem(_itemSlotBeingDragged.GridPosition, itemSize);
-                DeHighlightSlots(GetTruePosition(slot.GridPosition, _itemSlotBeingDragged), _itemSlotBeingDragged);
-                _itemSlotBeingDragged.GridPosition = truePos;
-                _itemSlotBeingDragged.StopDrag();
-                _itemSlotBeingDragged.GlobalPosition = Slots[truePos.X, truePos.Y].GlobalPosition;
-                GD.Print("global", Slots[truePos.X, truePos.Y].GlobalPosition);
-                for (int y = truePos.Y; y < truePos.Y + itemSize.Y; y++)
-                {
-                    for (int x = truePos.X; x < truePos.X + itemSize.X; x++)
-                    {
-                        Slots[x,y].ItemSlot = _itemSlotBeingDragged;
-                        Slots[x,y].HighLight(Colors.Purple);
-                    }
-                }
-                _itemSlotBeingDragged = null;
+    public void MousePressed(SlotContainer container, InputEventMouseButton button, ItemSlot itemslot){
+        focusedSlot = itemslot;
+    }
+
+    public void MouseReleased(SlotContainer container, InputEventMouse mouse){
+        if(focusedSlot != null){
+            if(_focusedContainer == null){
+                this.ResetItemPosition(focusedSlot);
             }
+            else if(!_focusedContainer.InsertItem(_focusedContainer.GlobalToSlotIndex(focusedSlot.TruePosition, focusedSlot.ItemSize), focusedSlot)){
+                focusedSlot.Container.ResetItem(focusedSlot);
+            }
+            focusedSlot = null;
+        }
+        Dragging = false;
+    }
+
+    public void DoubleClick(SlotContainer container, InputEventMouseButton button, ItemSlot item){
+        if(item.ItemHolder.Item is ContainerItem containeritem && !this.OpenedWindows.Where(i=>i.Itemslot == item).Any()){
+            BaseWindow window = this.ContainerWindowScene.Instantiate<ContainerWindow>();
+            this.AddChild(window);
+            window.Itemslot = item;
+            this.OpenedWindows.AddLast(window);
+            window.Position = (this.Size / 2 - window.Size) + new Vector2(20, 20) * this.OpenedWindows.Count;
         }
     }
+
+    public void WindowClosed(BaseWindow window){
+        this.OpenedWindows.Remove(window);
+    }
+
+    public void ResetItemPosition(ItemSlot item){
+        item.Container.ResetItem(item);
+    }    
+
+    public object Save()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void Load(object obj)
+    {
+        throw new NotImplementedException();
+    }
+
 }
