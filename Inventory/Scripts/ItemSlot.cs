@@ -14,7 +14,7 @@ public partial class ItemSlot : Panel, ISaveAble{
     }
 
     [Export] Label amountLabel;
-    [Export] VBoxContainer ModifierContainer;
+    [Export] HBoxContainer ModifierContainer;
 
     public Vector2 TruePosition { get{ return this.GlobalPosition + new Vector2(InventoryManager.SlotSize/2, InventoryManager.SlotSize/2); } }
 
@@ -51,7 +51,6 @@ public partial class ItemSlot : Panel, ISaveAble{
     {
         get { return ItemHolder.Amount >= ItemHolder.Item.StackSize; }
     }
-    
 
     private bool _justRotated = false;
     public bool JustRotated { get { return _justRotated; } set { _justRotated = value; } }
@@ -68,6 +67,7 @@ public partial class ItemSlot : Panel, ISaveAble{
             this.SlotSize = this.ItemSize;
         }
     }}
+
     public Vector2I ItemSize { get { return Rotated ? new Vector2I(ItemHolder.Item.ItemSize.Y, ItemHolder.Item.ItemSize.X) : ItemHolder.Item.ItemSize; } }
     StyleBoxTexture itemsprite = new StyleBoxTexture();
     public override void _Ready()
@@ -75,9 +75,6 @@ public partial class ItemSlot : Panel, ISaveAble{
         base._Ready();
         this.AddThemeStyleboxOverride("panel", itemsprite);
     }
-
-    public static event Action<ItemSlot> DragBegin;
-    public static event Action<ItemSlot> DragEnd;
 
     public override void _Process(double delta)
     {

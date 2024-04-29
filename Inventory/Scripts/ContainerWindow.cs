@@ -21,8 +21,8 @@ public partial class ContainerWindow : BaseWindow
 		for (var X = 0; X < _containerModifier.ContainerSize.X; X++)
 		{
 			if(_containerModifier.grid[X,0] != null){
-				Container.AddChild(_containerModifier.grid[X,0]);
-				_containerModifier.grid[X,0].Container = Container;
+				Container.AddChild(_containerModifier.grid[X,0].Itemslot);
+				_containerModifier.grid[X,0].Itemslot.Container = Container;
 			}
 		}
     }
@@ -33,7 +33,7 @@ public partial class ContainerWindow : BaseWindow
 		for (var X = 0; X < _containerModifier.ContainerSize.X; X++)
 		{
 			if(_containerModifier.grid[X,0] != null){
-				Container.RemoveChild(_containerModifier.grid[X,0]);
+				Container.RemoveChild(_containerModifier.grid[X,0].Itemslot);
 			}
 		}
 		this.QueueFree();

@@ -1,13 +1,14 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
 
 public partial class InventoryManager : ContainerManager, ISaveAble
 {
     [Export] PackedScene ContainerWindowScene;
-    public static PackedScene containerScene { get; protected set;} = ResourceLoader.Load<PackedScene>("res://Inventory/Scenes/Slot.tscn");
+    public static PackedScene ItemslotScene { get; protected set;} = ResourceLoader.Load<PackedScene>("res://Inventory/Scenes/Itemslot.tscn");
     public static int SlotSize = 64;
     [Export] SlotContainer slotContainer;
     SlotContainer _focusedContainer;
@@ -27,7 +28,6 @@ public partial class InventoryManager : ContainerManager, ISaveAble
             }
         }
     }}
-
     LinkedList<BaseWindow> OpenedWindows = new();
     
     private ItemSlot _focusedSlot;

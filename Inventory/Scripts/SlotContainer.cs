@@ -3,11 +3,10 @@ using Godot;
 
 public partial class SlotContainer : ContainerManager{
 
-    protected ItemSlot[,] _slots;
-    public ItemSlot[,] Slots
+    public GridFiller[,] Slots
     {
-        get { return _slots; }
-        set { _slots = value; }
+        get;
+        set;
     }
     [Export] public Vector2I ContainerSize { get; set; } = Vector2I.One;
 
@@ -26,7 +25,7 @@ public partial class SlotContainer : ContainerManager{
         UpdateMinimumSize();
         MouseEntered += MouseEnter;
         MouseExited += MouseExit;
-        this.Slots = new ItemSlot[ContainerSize.X, ContainerSize.Y];
+        this.Slots = new ItemData[ContainerSize.X, ContainerSize.Y];
         if(HighlightPanel == null){
             HighlightPanel = new();
         }
@@ -85,12 +84,12 @@ public partial class SlotContainer : ContainerManager{
             Vector2I index = GetSlotIndex(button.Position);
             if(button.DoubleClick){
                 if(Slots[index.X, index.Y] != null){
-                    MouseDoubleClick?.Invoke(this, button, Slots[index.X, index.Y]);
+                    MouseDoubleClick?.Invoke(this, button, Slots[index.X, index.Y].Itemslot);
                 }
             }
             else if(button.ButtonMask == MouseButtonMask.Left && button.IsPressed()){
                 if(this.Slots[index.X, index.Y] != null){
-                    MousePressed?.Invoke(this, button, Slots[index.X, index.Y]);
+                    MousePressed?.Invoke(this, button, Slots[index.X, index.Y].Itemslot);
                 }
             }
             else if(button.ButtonIndex == MouseButton.Left && button.IsReleased()){
@@ -99,7 +98,7 @@ public partial class SlotContainer : ContainerManager{
             }
             else if(button.ButtonIndex == MouseButton.Right && button.IsPressed()){
                 if(this.Slots[index.X, index.Y] != null)
-                   GD.Print(this.Slots[index.X, index.Y].ItemHolder.Item.Name, " item name");
+                   GD.Print(this.Slots[index.X, index.Y].Itemslot.ItemHolder.Item.Name, " item name");
             }
         }
         if(@event is InputEventMouseMotion motion){
@@ -125,7 +124,7 @@ public partial class SlotContainer : ContainerManager{
             for (int x = 0; x <= ContainerSize.X - item.Item.ItemSize.X; x++)
             {
                 if(ItemFits(new Vector2I(x, y), item.Item)){
-                    ItemSlot itemslot = new();
+                    ItemSlot itemslot = InventoryManager.ItemslotScene.Instantiate<ItemSlot>();
                     itemslot.GridPosition = new(x, y);
                     itemslot.Container = this;
                     itemslot.ItemHolder = item;
@@ -145,8 +144,8 @@ public partial class SlotContainer : ContainerManager{
         {
             for (int x = 0; x < ContainerSize.X; x++)
             {
-                if(Slots[x, y] != null && Slots[x, y].ItemHolder.Equals(item) && !Slots[x, y].IsFull){
-                    ExistingItem = Slots[x, y];
+                if(Slots[x, y] != null && Slots[x, y].Itemslot.ItemHolder.Equals(item) && !Slots[x, y].Itemslot.IsFull){
+                    ExistingItem = Slots[x, y].Itemslot;
                     return true;
                 }
             }
@@ -189,7 +188,7 @@ public partial class SlotContainer : ContainerManager{
         {   
             for (int x = truePos.X; x < truePos.X + itemslot.ItemSize.X; x++)
             {
-                if(Slots[x,y] != null && Slots[x,y] != itemslot){
+                if(Slots[x,y] != null && Slots[x,y].Itemslot != itemslot){
                     return false;
                 }
             }
@@ -202,8 +201,15 @@ public partial class SlotContainer : ContainerManager{
         {   
             for (int x = truePos.X; x < truePos.X + itemslot.ItemSize.X; x++)
             {   
-                // if(x == truePos.X && y == truePos.Y){}
-                Slots[x,y] = itemslot;
+                if(x == truePos.X && y == truePos.Y){
+                    Slots[x,y] = new ItemData(itemslot);
+                    GD.Print("rjiogrpiegptwiojpowigej");
+                }
+                else{
+                    GridFiller filler = new ItemDataRef(new Vector2I(truePos.X, truePos.Y), itemslot);
+                    this.Slots[x,y] = new ItemDataRef(new(), null);
+                    GD.Print("gjoiftijoij");
+                }
             }
         }
     }

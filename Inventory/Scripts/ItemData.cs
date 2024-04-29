@@ -1,26 +1,16 @@
+using System;
 using Godot;
 
-public class ItemData : ItemRef{
-    public ItemData(Vector2I gridRef) : base(gridRef)
+public class ItemData : GridFiller{
+    public ItemData(ItemSlot itemslot) : base(itemslot)
     {
         
     }
 
-    public ItemSlot Itemslot { get; set; }
-    public ItemHolder itemHolder { get; set; }
-}
+    private ItemHolder _itemholder;
+    public ItemHolder ItemHolder { get { return _itemholder; } set { _itemholder = value; } }
 
-public class ItemRef{
-    
-    public ItemRef(Vector2I gridref)
-    {
-        this._gridRef = gridref;
+    public int CombineItems(ItemHolder item){
+        return this.Itemslot.CombineItems(item);
     }
-    private Vector2I _gridRef;
-    public Vector2I GridRef
-    {
-        get { return _gridRef; }
-        set { _gridRef = value; }
-    }
-    
 }
