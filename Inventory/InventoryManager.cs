@@ -57,9 +57,9 @@ public partial class InventoryManager : ContainerManager, ISaveAble
         BaseWindow.Pressed += WindowPressed;
         BaseWindow.Released += WindowReleased;
         BaseWindow.CloseEvent += WindowClosed;
-        this.InsertItem(ItemDatabase.Instance.GetItem("BasicRod"), slotContainer);
-        this.InsertItem(ItemDatabase.Instance.GetItem("Fish"), slotContainer);
-        this.InsertItem(ItemDatabase.Instance.GetItem("TackleBox"), slotContainer);
+        // this.InsertItem(ItemDatabase.Instance.GetItem("BasicRod"), slotContainer);
+        // this.InsertItem(ItemDatabase.Instance.GetItem("Fish"), slotContainer);
+        // this.InsertItem(ItemDatabase.Instance.GetItem("TackleBox"), slotContainer);
     }
 
     public override void _Process(double delta)
@@ -78,6 +78,10 @@ public partial class InventoryManager : ContainerManager, ISaveAble
                 OpenedWindows.Last().Close();
                 OpenedWindows.RemoveLast();
             }
+        }
+        if(Input.IsActionJustPressed("Debug")){
+            // this.Save();
+            this.Load(null);
         }
     }
 
@@ -159,12 +163,29 @@ public partial class InventoryManager : ContainerManager, ISaveAble
 
     public object Save()
     {
-        throw new NotImplementedException();
+        List<ItemData> states = new();
+        foreach (var item in this.slotContainer.Slots)
+        {
+            if(item is ItemData data){
+                states.Add(data);
+            }
+        }
+        SaveLoad.Save(states);
+        return states;
     }
 
     public void Load(object obj)
     {
-        throw new NotImplementedException();
+        var list = SaveLoad.Load();
+        foreach (var item in list){
+            if(item.ItemHolder.TryGetModifier<ContainerModifier>(out ContainerModifier modifier)){
+                foreach (var data in modifier.Grid)
+                {
+                    GD.Print(data);
+                }
+            }
+            this.slotContainer.InsertItem(item);
+        }
     }
 
 }

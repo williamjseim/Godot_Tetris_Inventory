@@ -29,7 +29,7 @@
     "Name": "Tackle Box",
     "Id": "TackleBox",
     "SpritePath": "res://Inventory/Sprites/Storage.tres",
-    "StackSize": 999,
+    "StackSize": 1,
     "ItemSize": {
       "$type": "Godot.Vector2I, GodotSharp",
       "X": 2,
@@ -46,6 +46,7 @@
         "FilterWhiteList":[
         ],
         "FilterBlackList":[
+          "ContainerItem"
         ]
       }
     ]

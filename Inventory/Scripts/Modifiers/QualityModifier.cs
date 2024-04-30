@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Godot;
 
 public enum Quality{
@@ -7,8 +8,11 @@ public enum Quality{
     Diamond,
 }
 public class QualityModifier : ItemModifier{
+    [JsonIgnore]
     public static Texture2D SilverQuality { get; protected set;}
+    [JsonIgnore]
     public static Texture2D GoldQuality { get; protected set;}
+    [JsonIgnore]
     public static Texture2D DiamondQuality { get; protected set;}
 
     public QualityModifier(Quality quality) : base()
@@ -22,6 +26,7 @@ public class QualityModifier : ItemModifier{
         protected set { _quality = value; }
     }
 
+    [JsonIgnore]
     public Texture QualityTexture { get{
         switch(Quality){
             case Quality.Silver:

@@ -48,6 +48,7 @@ anchor_bottom = 1.0
 offset_left = -24.0
 grow_horizontal = 2
 grow_vertical = 2
+tooltip_text = "Close"
 theme_override_styles/normal = SubResource("StyleBoxFlat_0xwoa")
 theme_override_styles/hover = SubResource("StyleBoxFlat_pingu")
 icon = ExtResource("1_bavi6")

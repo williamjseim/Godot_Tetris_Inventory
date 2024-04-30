@@ -42,7 +42,7 @@ public partial class ItemSlot : Panel, ISaveAble{
         set { _ItemHolder = value;
             if(!value.Equals(ItemHolder.Empty)){
                 this.itemsprite.Texture = ItemHolder.Texture;
-                this.SlotSize = value.Item.ItemSize;
+                this.SlotSize = value.ItemSize;
             }
         }
     }
@@ -54,9 +54,8 @@ public partial class ItemSlot : Panel, ISaveAble{
 
     private bool _justRotated = false;
     public bool JustRotated { get { return _justRotated; } set { _justRotated = value; } }
-    private bool _rotated = false;
-    public bool Rotated { get { return _rotated;} set {
-        _rotated = value;
+    public bool Rotated { get { return _ItemHolder.Rotated;} set {
+        _ItemHolder.Rotated = value;
         _justRotated = !_justRotated;
         if(value == true){
             this.itemsprite.Texture = this.ItemHolder.Item.RotatedItemTexture;
@@ -68,7 +67,7 @@ public partial class ItemSlot : Panel, ISaveAble{
         }
     }}
 
-    public Vector2I ItemSize { get { return Rotated ? new Vector2I(ItemHolder.Item.ItemSize.Y, ItemHolder.Item.ItemSize.X) : ItemHolder.Item.ItemSize; } }
+    public Vector2I ItemSize { get { return ItemHolder.ItemSize;} }
     StyleBoxTexture itemsprite = new StyleBoxTexture();
     public override void _Ready()
     {
