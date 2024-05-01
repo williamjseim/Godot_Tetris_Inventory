@@ -5,10 +5,9 @@ public abstract class ItemModifier{
     }
 
     public abstract class ModifierSaveData{
+        public ModifierSaveData(){}
         public ModifierSaveData(ItemModifier modifier){
             
         }
-
-        public abstract ItemModifier CreateInstance();
     }
 }

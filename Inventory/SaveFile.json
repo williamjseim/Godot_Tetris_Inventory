@@ -1,183 +1,56 @@
 [
   {
-    "$type": "ItemData, Tetris_Inventory",
-    "GridPosition": {
-      "$type": "Godot.Vector2I, GodotSharp",
-      "X": 0,
-      "Y": 0
-    },
-    "ItemHolder": {
-      "$type": "ItemHolder, Tetris_Inventory",
-      "_amount": 1,
-      "Rotated": false,
-      "AddedModifiers": [],
-      "Id": "BasicRod",
-      "Amount": 1,
-      "Name": "Basic rod",
-      "StaticModifiers": null
-    }
-  },
-  {
-    "$type": "ItemData, Tetris_Inventory",
-    "GridPosition": {
+    "$type": "ItemData+SaveData, Tetris_Inventory",
+    "gridPosition": {
       "$type": "Godot.Vector2I, GodotSharp",
       "X": 3,
       "Y": 0
     },
-    "ItemHolder": {
-      "$type": "ItemHolder, Tetris_Inventory",
-      "_amount": 1,
-      "Rotated": false,
-      "AddedModifiers": [],
-      "Id": "TackleBox",
-      "Amount": 1,
-      "Name": "Tackle Box",
-      "StaticModifiers": [
+    "itemholderSaveData": {
+      "$type": "ItemHolder+SaveData, Tetris_Inventory",
+      "modifierStates": [
         {
-          "$type": "ContainerModifier, Tetris_Inventory",
-          "_grid": [
-            [
-              null,
-              null,
-              null,
-              null
-            ],
-            [
-              {
-                "$type": "ItemData, Tetris_Inventory",
-                "GridPosition": {
-                  "$type": "Godot.Vector2I, GodotSharp",
-                  "X": 1,
-                  "Y": 0
-                },
-                "ItemHolder": {
-                  "$type": "ItemHolder, Tetris_Inventory",
-                  "_amount": 1,
-                  "Rotated": false,
-                  "AddedModifiers": [],
-                  "Id": "Fish",
-                  "Amount": 1,
-                  "Name": "Fish",
-                  "StaticModifiers": null
-                }
+          "$type": "ContainerModifier+ContainerSaveData, Tetris_Inventory",
+          "Itemdata": [
+            {
+              "$type": "ItemData+SaveData, Tetris_Inventory",
+              "gridPosition": {
+                "$type": "Godot.Vector2I, GodotSharp",
+                "X": 0,
+                "Y": 0
               },
-              null,
-              null,
-              null
-            ],
-            [
-              {
-                "$type": "ItemFiller, Tetris_Inventory",
-                "GridRef": {
-                  "$type": "Godot.Vector2I, GodotSharp",
-                  "X": 1,
-                  "Y": 0
-                },
-                "Data": {
-                  "$type": "ItemData, Tetris_Inventory",
-                  "GridPosition": {
-                    "$type": "Godot.Vector2I, GodotSharp",
-                    "X": 1,
-                    "Y": 0
-                  },
-                  "ItemHolder": {
-                    "$type": "ItemHolder, Tetris_Inventory",
-                    "_amount": 1,
-                    "Rotated": false,
-                    "AddedModifiers": [],
-                    "Id": "Fish",
-                    "Amount": 1,
-                    "Name": "Fish",
-                    "StaticModifiers": null
-                  }
-                }
+              "itemholderSaveData": {
+                "$type": "ItemHolder+SaveData, Tetris_Inventory",
+                "modifierStates": [],
+                "id": "BasicRod",
+                "amount": 1,
+                "name": "Basic rod",
+                "Rotated": false
+              }
+            },
+            {
+              "$type": "ItemData+SaveData, Tetris_Inventory",
+              "gridPosition": {
+                "$type": "Godot.Vector2I, GodotSharp",
+                "X": 1,
+                "Y": 0
               },
-              null,
-              null,
-              null
-            ],
-            [
-              null,
-              null,
-              null,
-              null
-            ]
-          ],
-          "ContainerSize": {
-            "$type": "Godot.Vector2I, GodotSharp",
-            "X": 4,
-            "Y": 4
-          },
-          "Grid": [
-            [
-              null,
-              null,
-              null,
-              null
-            ],
-            [
-              {
-                "$type": "ItemData, Tetris_Inventory",
-                "GridPosition": {
-                  "$type": "Godot.Vector2I, GodotSharp",
-                  "X": 1,
-                  "Y": 0
-                },
-                "ItemHolder": {
-                  "$type": "ItemHolder, Tetris_Inventory",
-                  "_amount": 1,
-                  "Rotated": false,
-                  "AddedModifiers": [],
-                  "Id": "Fish",
-                  "Amount": 1,
-                  "Name": "Fish",
-                  "StaticModifiers": null
-                }
-              },
-              null,
-              null,
-              null
-            ],
-            [
-              {
-                "$type": "ItemFiller, Tetris_Inventory",
-                "GridRef": {
-                  "$type": "Godot.Vector2I, GodotSharp",
-                  "X": 1,
-                  "Y": 0
-                },
-                "Data": {
-                  "$type": "ItemData, Tetris_Inventory",
-                  "GridPosition": {
-                    "$type": "Godot.Vector2I, GodotSharp",
-                    "X": 1,
-                    "Y": 0
-                  },
-                  "ItemHolder": {
-                    "$type": "ItemHolder, Tetris_Inventory",
-                    "_amount": 1,
-                    "Rotated": false,
-                    "AddedModifiers": [],
-                    "Id": "Fish",
-                    "Amount": 1,
-                    "Name": "Fish",
-                    "StaticModifiers": null
-                  }
-                }
-              },
-              null,
-              null,
-              null
-            ],
-            [
-              null,
-              null,
-              null,
-              null
-            ]
+              "itemholderSaveData": {
+                "$type": "ItemHolder+SaveData, Tetris_Inventory",
+                "modifierStates": [],
+                "id": "Fish",
+                "amount": 1,
+                "name": "Fish",
+                "Rotated": false
+              }
+            }
           ]
         }
-      ]
+      ],
+      "id": "TackleBox",
+      "amount": 1,
+      "name": "Tackle Box",
+      "Rotated": false
     }
   }
 ]

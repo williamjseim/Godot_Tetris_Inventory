@@ -80,7 +80,7 @@ public partial class InventoryManager : ContainerManager, ISaveAble
             }
         }
         if(Input.IsActionJustPressed("Debug")){
-            // this.Save();
+            //this.Save();
             this.Load(null);
         }
     }
@@ -111,6 +111,7 @@ public partial class InventoryManager : ContainerManager, ISaveAble
     public void InsertItem(BaseItem item, SlotContainer container){
         container.InsertItem(new ItemHolder(item, 1));
     }
+
     public new void MouseMotion(InputEventMouseMotion motion){
         if(focusedSlot != null){
             Dragging = true;
@@ -163,11 +164,11 @@ public partial class InventoryManager : ContainerManager, ISaveAble
 
     public object Save()
     {
-        List<ItemData> states = new();
+        List<object> states = new();
         foreach (var item in this.slotContainer.Slots)
         {
             if(item is ItemData data){
-                states.Add(data);
+                states.Add(data.Save());
             }
         }
         SaveLoad.Save(states);
@@ -176,15 +177,9 @@ public partial class InventoryManager : ContainerManager, ISaveAble
 
     public void Load(object obj)
     {
-        var list = SaveLoad.Load();
+        var list = SaveLoad.Load<ItemData.SaveData>();
         foreach (var item in list){
-            if(item.ItemHolder.TryGetModifier<ContainerModifier>(out ContainerModifier modifier)){
-                foreach (var data in modifier.Grid)
-                {
-                    GD.Print(data);
-                }
-            }
-            this.slotContainer.InsertItem(item);
+            slotContainer.InsertItem(item);
         }
     }
 

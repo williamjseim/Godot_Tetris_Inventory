@@ -8,21 +8,21 @@ public class ItemData : IStorable, ISaveAble{
     {
         this._itemslot = itemslot;
         this._itemholder = itemslot.ItemHolder; 
-        this.GridPosition = gridpos;
+        this._gridPos = gridpos;
     }
 
-    private Vector2I _gridPos;
+    private Vector2I _gridPos = new();
     public Vector2I GridPosition
     {
         get { return _gridPos; }
         set { _gridPos = value; }
     }
 
-    private ItemHolder _itemholder;
+    private ItemHolder _itemholder = new();
     public ItemHolder ItemHolder { get { return _itemholder; } set { _itemholder = value; } }
 
     [JsonIgnore]
-    private ItemSlot _itemslot;
+    private ItemSlot _itemslot = null;
     [JsonIgnore]
     public ItemSlot Itemslot { get{return _itemslot; } set { _itemslot = value;} }
     
@@ -42,32 +42,20 @@ public class ItemData : IStorable, ISaveAble{
     {
         if(obj is SaveData saveData){
 
-            this.ItemHolder = new(){Id = saveData.id, Amount = saveData.amount};
-            this.GridPosition = saveData.gridPos;
+            this.GridPosition = saveData.gridPosition;
+            GD.Print("new itemholder itemdata");
+            this.ItemHolder = new ItemHolder(saveData.itemholderSaveData);
+            GD.Print(this.ItemHolder.Item, " ijoijoihjuioghioughiouhikuh");
         }
     }
 
-
     public class SaveData{
-        public List<object> modifierStates = new();
-        public string id;
-        public int amount;
-        public string name;
-        public bool Rotated;
-        public Vector2I gridPos;
+        public Vector2I gridPosition;
+        public ItemHolder.SaveData itemholderSaveData;
+        public SaveData(){}
         public SaveData(ItemData itemSlot){
-            this.id = itemSlot.ItemHolder.Id;
-            this.amount = itemSlot.ItemHolder.Amount;
-            this.name = itemSlot.ItemHolder.Name;
-            this.gridPos = itemSlot.GridPosition;
-            this.Rotated = itemSlot.ItemHolder.Rotated;
-            if(itemSlot.ItemHolder.StaticModifiers != null)
-            foreach (var item in itemSlot.ItemHolder.StaticModifiers)
-            {
-                if(item is ISaveAble saveable){
-                    modifierStates.Add(saveable.Save());
-                }    
-            }
+            this.gridPosition = itemSlot.GridPosition;
+            this.itemholderSaveData = (ItemHolder.SaveData)itemSlot.ItemHolder.Save();
         }
     }
 }

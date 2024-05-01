@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 public static class SaveLoad{
     static string savefile = @"F:\GitHub\Godot_Tetris_Inventory\Inventory\SaveFile.json";
 
-    public static void Save(List<ItemData> data){
+    public static void Save(List<object> data){
         JsonSerializer serializer = new JsonSerializer();
         serializer.TypeNameHandling = TypeNameHandling.Objects;
         serializer.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
@@ -18,16 +18,16 @@ public static class SaveLoad{
         }
     }
 
-    public static List<ItemData> Load(){
+    public static List<T> Load<T>(){
         JsonSerializer serializer = new JsonSerializer();
         serializer.TypeNameHandling = TypeNameHandling.Objects;
         serializer.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
         serializer.Formatting = Newtonsoft.Json.Formatting.Indented;
 
-        List<ItemData> itemHolders;
+        List<T> itemHolders;
         using(StreamReader sr = new StreamReader(@"F:\GitHub\Godot_Tetris_Inventory\Inventory\SaveFile.json"))
         using(JsonReader reader = new JsonTextReader(sr)){
-            itemHolders = serializer.Deserialize<List<ItemData>>(reader);
+            itemHolders = serializer.Deserialize<List<T>>(reader);
         }
         return itemHolders;
     }

@@ -94,7 +94,7 @@ public partial class SlotContainer : ContainerManager{
             else if(button.ButtonIndex == MouseButton.Right && button.IsPressed()){
                 var slot = Slots[index.X, index.Y];
                 if(slot != null){
-                    GD.Print("Type", slot.GetType().Name," ", slot.Data?.ItemHolder.Item.Name, " item name", slot?.Data.ItemHolder.StaticModifiers?.Count);
+                    GD.Print("Type", slot.GetType().Name," ", slot.Data.ItemHolder.Item.Name, " item name", slot?.Data.ItemHolder.StaticModifiers?.Count);
                     if(slot.Data.ItemHolder.TryGetModifier<ContainerModifier>(out ContainerModifier modifier)){
                         foreach(var item in modifier.Grid){
                             GD.Print(item != null);
@@ -141,18 +141,26 @@ public partial class SlotContainer : ContainerManager{
         return false;
     }
 
-    public virtual bool InsertItem(ItemData item){
-        GD.Print(item.ItemHolder.Id);
-        for (var y = item.GridPosition.Y; y < item.ItemHolder.ItemSize.Y + item.GridPosition.Y; y++)
+    public virtual bool InsertItem(ItemData.SaveData item){
+        ItemData itemData = new();
+        itemData.Load(item);
+        for (var y = item.gridPosition.Y; y < itemData.ItemHolder.ItemSize.Y + item.gridPosition.Y; y++)
         {
-            for (var x = item.GridPosition.X; x < item.ItemHolder.ItemSize.X + item.GridPosition.X; x++)
+            for (var x = item.gridPosition.X; x < itemData.ItemHolder.ItemSize.X + item.gridPosition.X; x++)
             {
-                if( new Vector2I(x, y) == item.GridPosition){
-                    GD.Print(item.ItemHolder.Item, "insert");
-                    this.Slots[x,y] = item;
+                if( new Vector2I(x, y) == item.gridPosition){
+                    ItemSlot itemslot = InventoryManager.ItemslotScene.Instantiate<ItemSlot>();
+                    itemslot.GridPosition = new(x, y);
+                    itemslot.Container = this;
+                    itemslot.ItemHolder = itemData.ItemHolder;
+                    itemslot.Size = itemData.ItemHolder.ItemSize * InventoryManager.SlotSize;
+                    itemslot.Position = this.GetSlotPosition(new Vector2I(x,y));
+                    itemData.Itemslot = itemslot;
+                    this.Slots[x,y] = itemData;
+                    this.AddChild(itemslot);
                     continue;
                 }
-                Slots[x, y] = new ItemFiller(item.GridPosition, item);
+                Slots[x, y] = new ItemFiller(item.gridPosition, itemData);
             }
         }
         return true;

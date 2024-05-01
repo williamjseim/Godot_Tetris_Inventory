@@ -44,47 +44,44 @@ public class ContainerModifier : ItemModifier, ISaveAble{
 
     public void Load(object obj)
     {
-        throw new NotImplementedException();
+        if(obj is ContainerSaveData saveData){
+            GD.Print(saveData.Itemdata, " container modifier");
+            if(saveData.Itemdata != null)
+            for (var i = 0; i < saveData.Itemdata.Count; i++)
+            {
+                this.insertSaveData(saveData.Itemdata[i]);
+            }
+        }
     }
 
-    private void insertSaveData(ItemData data){
-        for (var y = data.GridPosition.Y; y < data.GridPosition.Y + data.ItemHolder.ItemSize.Y; y++)
+    private void insertSaveData(ItemData.SaveData data){
+        ItemData itemData = new();
+        GD.Print(" new itemdata containermodifier");
+        itemData.Load(data);
+        for (var y = data.gridPosition.Y; y < data.gridPosition.Y + itemData.ItemHolder.ItemSize.Y; y++)
         {
-            for (var x = data.GridPosition.X; x < data.GridPosition.X + data.ItemHolder.ItemSize.X; x++)
+            for (var x = data.gridPosition.X; x < data.gridPosition.X + itemData.ItemHolder.ItemSize.X; x++)
             {
-                if(y == data.GridPosition.Y && x == data.GridPosition.X){
-                    this.Grid[y, x] = data;
+                if(y == data.gridPosition.Y && x == data.gridPosition.X){
+                    this.Grid[y, x] = itemData;
                     continue;
                 }
-                this.Grid[y, x] = new ItemFiller(data.GridPosition, data);
+                this.Grid[y, x] = new ItemFiller(itemData.GridPosition, itemData);
             }
         }
     }
 
     public class ContainerSaveData : ModifierSaveData{
-        Vector2I containerSize;
-        public List<object> Itemdata { get; private set; }
-        public ContainerSaveData() : base(null) {}
+        public List<ItemData.SaveData> Itemdata { get; private set; }
+        public ContainerSaveData() : base(){}
         public ContainerSaveData(ContainerModifier modifier) : base(modifier)
         {
             Itemdata = new();
-            this.containerSize = modifier.ContainerSize;
             foreach(var item in modifier.Grid){
                 if(item is ItemData data){
-                    this.Itemdata.Add(data.Save());
+                    this.Itemdata.Add((ItemData.SaveData)data.Save());
                 }
             }
-        }
-
-        public override ItemModifier CreateInstance(){
-            var modifier = new ContainerModifier(){
-                Grid = new IStorable[containerSize.X, containerSize.Y],
-            };
-            foreach (var item in Itemdata)
-            {
-                modifier.insertSaveData((ItemData)item);
-            }
-            return modifier;
         }
     }
 }
