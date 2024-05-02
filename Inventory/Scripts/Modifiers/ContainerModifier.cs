@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using Godot;
 using Newtonsoft.Json;
 
-public class ContainerModifier : ItemModifier, ISaveAble{
+public class ContainerModifier : ItemModifier, ISaveAble, ICloneable{
 
     public ContainerModifier() : base(){
         // this.ContainerSize = containerSize;
@@ -46,10 +47,13 @@ public class ContainerModifier : ItemModifier, ISaveAble{
     {
         if(obj is ContainerSaveData saveData){
             GD.Print(saveData.Itemdata, " container modifier");
-            if(saveData.Itemdata != null)
-            for (var i = 0; i < saveData.Itemdata.Count; i++)
-            {
-                this.insertSaveData(saveData.Itemdata[i]);
+            GD.Print(saveData.DataAmount, " asjgoijofgijoijoijoij");
+            if(saveData.Itemdata != null){
+                GD.Print("modifier loaded");
+                for (var i = 0; i < saveData.Itemdata.Count; i++)
+                {
+                    this.insertSaveData(saveData.Itemdata[i]);
+                }
             }
         }
     }
@@ -71,8 +75,17 @@ public class ContainerModifier : ItemModifier, ISaveAble{
         }
     }
 
+    public object Clone()
+    {
+        return new ContainerModifier(){
+            FilterBlackList = this.FilterBlackList,
+            FilterWhiteList = this.FilterWhiteList,
+            ContainerSize = this.ContainerSize,
+        };
+    }
+
+    [Serializable]
     public class ContainerSaveData : ModifierSaveData{
-        public List<ItemData.SaveData> Itemdata { get; private set; }
         public ContainerSaveData() : base(){}
         public ContainerSaveData(ContainerModifier modifier) : base(modifier)
         {
@@ -82,6 +95,10 @@ public class ContainerModifier : ItemModifier, ISaveAble{
                     this.Itemdata.Add((ItemData.SaveData)data.Save());
                 }
             }
+            this.DataAmount = Itemdata.Count;
+            GD.Print(Itemdata.Count, " container modifier");
         }
+        public List<ItemData.SaveData> Itemdata { get; set; }
+        public int DataAmount { get; set; }
     }
 }

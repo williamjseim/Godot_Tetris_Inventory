@@ -77,6 +77,7 @@ public partial class InventoryManager : ContainerManager, ISaveAble
             if(OpenedWindows.Count > 0){
                 OpenedWindows.Last().Close();
                 OpenedWindows.RemoveLast();
+                FocusedWindow = null;
             }
         }
         if(Input.IsActionJustPressed("Debug")){
@@ -164,11 +165,11 @@ public partial class InventoryManager : ContainerManager, ISaveAble
 
     public object Save()
     {
-        List<object> states = new();
+        List<ItemData.SaveData> states = new();
         foreach (var item in this.slotContainer.Slots)
         {
             if(item is ItemData data){
-                states.Add(data.Save());
+                states.Add((ItemData.SaveData)data.Save());
             }
         }
         SaveLoad.Save(states);

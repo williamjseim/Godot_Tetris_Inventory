@@ -95,11 +95,6 @@ public partial class SlotContainer : ContainerManager{
                 var slot = Slots[index.X, index.Y];
                 if(slot != null){
                     GD.Print("Type", slot.GetType().Name," ", slot.Data.ItemHolder.Item.Name, " item name", slot?.Data.ItemHolder.StaticModifiers?.Count);
-                    if(slot.Data.ItemHolder.TryGetModifier<ContainerModifier>(out ContainerModifier modifier)){
-                        foreach(var item in modifier.Grid){
-                            GD.Print(item != null);
-                        }
-                    }
                 }
             }
         }

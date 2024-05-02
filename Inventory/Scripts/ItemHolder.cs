@@ -20,11 +20,18 @@ public struct ItemHolder : ISaveAble
 		this._item = item;
 		_staticModifiers = new();
 		if(item.Modifiers != null){
-		
-		_staticModifiers = item.Modifiers;
+			foreach (var modifier in item.Modifiers)
+			{
+				if(modifier is ICloneable clone){
+					_staticModifiers.Add((ItemModifier)clone.Clone());
+				}
+				else{
+					_staticModifiers.Add(modifier);
+				}
+			}
 		}
 		else{
-		_staticModifiers = null;
+		_staticModifiers = new();
 		}
 		this._amount = amount;
 		this.AddedModifiers = new ItemModifier[0];
@@ -33,12 +40,31 @@ public struct ItemHolder : ISaveAble
 	public ItemHolder(SaveData saveData){
 		this._item = ItemDatabase.Instance.GetItem(saveData.id);
 		this._amount = saveData.amount;
-		this._staticModifiers = _item.Modifiers;
+		_staticModifiers = new();
+		if(_item.Modifiers != null){
+			foreach (var modifier in _item.Modifiers)
+			{
+				if(modifier is ICloneable clone){
+					_staticModifiers.Add((ItemModifier)clone.Clone());
+					GD.Print("modifier cloned itemholder");
+				}
+				else{
+					_staticModifiers.Add(modifier);
+				}
+			}
+		}
+		else{
+		_staticModifiers = new();
+		}
 		this.name = saveData.name;
 		this.AddedModifiers = new ItemModifier[0];
 		this.Rotated = saveData.Rotated;
+		GD.Print(saveData.modifierStates.Count, " modifier states itemholder");
 		for (var i = 0; i < saveData.modifierStates.Count; i++)
 		{
+			if(saveData.modifierStates[i] is ContainerModifier.ContainerSaveData modifier){
+				GD.Print(modifier.Itemdata, " modifier data");
+			}
 			if(this._staticModifiers[i] is ISaveAble saveAble){
 				saveAble.Load(saveData.modifierStates[i]);
 			}	
@@ -143,7 +169,8 @@ public struct ItemHolder : ISaveAble
 			{
 				if(itemHolder.StaticModifiers[i] is ISaveAble saveAble){
 					GD.Print("new modifier itemholder");
-					saveAble.Load(data.modifierStates[i]);
+					saveAble.Load(saveAble);
+					GD.Print(((ContainerModifier.ContainerSaveData)data.modifierStates[i]).Itemdata[0].itemholderSaveData.id);
 				}
 			}
 		return itemHolder;
@@ -153,8 +180,9 @@ public struct ItemHolder : ISaveAble
 
     public static ItemHolder Empty => new ItemHolder();
 
+	[Serializable]
 	public class SaveData{
-		public List<object> modifierStates = new();
+		public List<ItemModifier.ModifierSaveData> modifierStates = new();
 		public string id;
 		public int amount;
 		public string name;
@@ -169,7 +197,7 @@ public struct ItemHolder : ISaveAble
 			foreach (var item in itemHolder.StaticModifiers)
 			{
 				if(item is ISaveAble saveable){
-					modifierStates.Add(saveable.Save());
+					modifierStates.Add((ItemModifier.ModifierSaveData)saveable.Save());
 				}
 				else{
 					modifierStates.Add(null);

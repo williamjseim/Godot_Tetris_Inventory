@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Godot;
 using Newtonsoft.Json;
@@ -33,7 +34,7 @@ public class ItemData : IStorable, ISaveAble{
         return Data.Itemslot.CombineItems(item);
     }
 
-    public object Save()
+    public virtual object Save()
     {
         return new SaveData(this);
     }
@@ -43,12 +44,12 @@ public class ItemData : IStorable, ISaveAble{
         if(obj is SaveData saveData){
 
             this.GridPosition = saveData.gridPosition;
-            GD.Print("new itemholder itemdata");
             this.ItemHolder = new ItemHolder(saveData.itemholderSaveData);
-            GD.Print(this.ItemHolder.Item, " ijoijoihjuioghioughiouhikuh");
+            GD.Print(this.ItemHolder.Item, " new itemholder itemdata");
         }
     }
 
+    [Serializable]
     public class SaveData{
         public Vector2I gridPosition;
         public ItemHolder.SaveData itemholderSaveData;
