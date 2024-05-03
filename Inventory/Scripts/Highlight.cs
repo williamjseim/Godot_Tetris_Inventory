@@ -18,7 +18,7 @@ public partial class Highlight : Panel{
     public Highlight()
     {
         this.AddThemeStyleboxOverride("panel", styleBoxFlat);
-        CustomMinimumSize = new Vector2(InventoryManager.SlotSize, InventoryManager.SlotSize);
+        CustomMinimumSize = new Vector2(InventoryManager.slotSize, InventoryManager.slotSize);
         MouseFilter = MouseFilterEnum.Ignore;
     }
 

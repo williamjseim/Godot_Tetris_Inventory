@@ -8,7 +8,7 @@ public partial class ItemSlot : Panel, ISaveAble{
 
     public ItemSlot()
     {
-        this.ZIndex = 1;
+        this.ZIndex = 0;
         MouseFilter = MouseFilterEnum.Ignore;
         // this.TopLevel = true;
     }
@@ -16,7 +16,7 @@ public partial class ItemSlot : Panel, ISaveAble{
     [Export] Label amountLabel;
     [Export] HBoxContainer ModifierContainer;
 
-    public Vector2 TruePosition { get{ return this.GlobalPosition + new Vector2(InventoryManager.SlotSize/2, InventoryManager.SlotSize/2); } }
+    public Vector2 TruePosition { get{ return this.GlobalPosition + new Vector2(InventoryManager.slotSize/2, InventoryManager.slotSize/2); } }
 
     private Vector2I _gridPosition;
     public Vector2I GridPosition

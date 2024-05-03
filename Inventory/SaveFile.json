@@ -3,22 +3,6 @@
     "$type": "ItemData+SaveData, Tetris_Inventory",
     "gridPosition": {
       "$type": "Godot.Vector2I, GodotSharp",
-      "X": 0,
-      "Y": 0
-    },
-    "itemholderSaveData": {
-      "$type": "ItemHolder+SaveData, Tetris_Inventory",
-      "modifierStates": [],
-      "id": "BasicRod",
-      "amount": 1,
-      "name": "Basic rod",
-      "Rotated": false
-    }
-  },
-  {
-    "$type": "ItemData+SaveData, Tetris_Inventory",
-    "gridPosition": {
-      "$type": "Godot.Vector2I, GodotSharp",
       "X": 3,
       "Y": 0
     },
@@ -32,6 +16,22 @@
               "$type": "ItemData+SaveData, Tetris_Inventory",
               "gridPosition": {
                 "$type": "Godot.Vector2I, GodotSharp",
+                "X": 0,
+                "Y": 0
+              },
+              "itemholderSaveData": {
+                "$type": "ItemHolder+SaveData, Tetris_Inventory",
+                "modifierStates": [],
+                "id": "BasicRod",
+                "amount": 1,
+                "name": "Basic rod",
+                "Rotated": false
+              }
+            },
+            {
+              "$type": "ItemData+SaveData, Tetris_Inventory",
+              "gridPosition": {
+                "$type": "Godot.Vector2I, GodotSharp",
                 "X": 1,
                 "Y": 0
               },
@@ -41,11 +41,11 @@
                 "id": "Fish",
                 "amount": 1,
                 "name": "Fish",
-                "Rotated": false
+                "Rotated": true
               }
             }
           ],
-          "DataAmount": 1
+          "DataAmount": 2
         }
       ],
       "id": "TackleBox",

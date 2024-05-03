@@ -46,10 +46,7 @@ public class ContainerModifier : ItemModifier, ISaveAble, ICloneable{
     public void Load(object obj)
     {
         if(obj is ContainerSaveData saveData){
-            GD.Print(saveData.Itemdata, " container modifier");
-            GD.Print(saveData.DataAmount, " asjgoijofgijoijoijoij");
             if(saveData.Itemdata != null){
-                GD.Print("modifier loaded");
                 for (var i = 0; i < saveData.Itemdata.Count; i++)
                 {
                     this.insertSaveData(saveData.Itemdata[i]);
@@ -60,17 +57,16 @@ public class ContainerModifier : ItemModifier, ISaveAble, ICloneable{
 
     private void insertSaveData(ItemData.SaveData data){
         ItemData itemData = new();
-        GD.Print(" new itemdata containermodifier");
         itemData.Load(data);
         for (var y = data.gridPosition.Y; y < data.gridPosition.Y + itemData.ItemHolder.ItemSize.Y; y++)
         {
             for (var x = data.gridPosition.X; x < data.gridPosition.X + itemData.ItemHolder.ItemSize.X; x++)
             {
                 if(y == data.gridPosition.Y && x == data.gridPosition.X){
-                    this.Grid[y, x] = itemData;
+                    this.Grid[x, y] = itemData;
                     continue;
                 }
-                this.Grid[y, x] = new ItemFiller(itemData.GridPosition, itemData);
+                this.Grid[x, y] = new ItemFiller(itemData.GridPosition, itemData);
             }
         }
     }
@@ -96,7 +92,6 @@ public class ContainerModifier : ItemModifier, ISaveAble, ICloneable{
                 }
             }
             this.DataAmount = Itemdata.Count;
-            GD.Print(Itemdata.Count, " container modifier");
         }
         public List<ItemData.SaveData> Itemdata { get; set; }
         public int DataAmount { get; set; }

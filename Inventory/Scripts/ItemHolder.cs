@@ -40,13 +40,14 @@ public struct ItemHolder : ISaveAble
 	public ItemHolder(SaveData saveData){
 		this._item = ItemDatabase.Instance.GetItem(saveData.id);
 		this._amount = saveData.amount;
+		this.Rotated = saveData.Rotated;
+		this.name = saveData.name;
 		_staticModifiers = new();
 		if(_item.Modifiers != null){
 			foreach (var modifier in _item.Modifiers)
 			{
 				if(modifier is ICloneable clone){
 					_staticModifiers.Add((ItemModifier)clone.Clone());
-					GD.Print("modifier cloned itemholder");
 				}
 				else{
 					_staticModifiers.Add(modifier);
@@ -59,11 +60,9 @@ public struct ItemHolder : ISaveAble
 		this.name = saveData.name;
 		this.AddedModifiers = new ItemModifier[0];
 		this.Rotated = saveData.Rotated;
-		GD.Print(saveData.modifierStates.Count, " modifier states itemholder");
 		for (var i = 0; i < saveData.modifierStates.Count; i++)
 		{
 			if(saveData.modifierStates[i] is ContainerModifier.ContainerSaveData modifier){
-				GD.Print(modifier.Itemdata, " modifier data");
 			}
 			if(this._staticModifiers[i] is ISaveAble saveAble){
 				saveAble.Load(saveData.modifierStates[i]);
@@ -78,7 +77,7 @@ public struct ItemHolder : ISaveAble
 	
 	[JsonIgnore] public Texture2D Texture { get{ return this.Item == null ? null : this.Item.ItemTexture; } }
 
-	public string Id { get { return this.Item == null ? BaseItem.Empty : Item.Id; } set {this._item = ItemDatabase.Instance.GetItem(value); GD.Print(Item, " item test"); this.StaticModifiers = _item.Modifiers; }} // -1 means the slot is empty
+	public string Id { get { return this.Item == null ? BaseItem.Empty : Item.Id; } set {this._item = ItemDatabase.Instance.GetItem(value); this.StaticModifiers = _item.Modifiers; }} // -1 means the slot is empty
 
 	public int _amount;
 	public int Amount { get {return _amount; } set { _amount = value; } } //amount of items in slot
@@ -156,6 +155,10 @@ public struct ItemHolder : ISaveAble
 		}
     }
 
+	public void AddAmount(int i = 1){
+		this._amount += i;
+	}
+
 	public static ItemHolder Load(SaveData obj){
 		if(obj is SaveData data){
 			ItemHolder itemHolder= new ItemHolder(){
@@ -168,9 +171,7 @@ public struct ItemHolder : ISaveAble
 			for (var i = 0; i < data.modifierStates.Count; i++)
 			{
 				if(itemHolder.StaticModifiers[i] is ISaveAble saveAble){
-					GD.Print("new modifier itemholder");
 					saveAble.Load(saveAble);
-					GD.Print(((ContainerModifier.ContainerSaveData)data.modifierStates[i]).Itemdata[0].itemholderSaveData.id);
 				}
 			}
 		return itemHolder;

@@ -19,7 +19,7 @@ public class ItemData : IStorable, ISaveAble{
         set { _gridPos = value; }
     }
 
-    private ItemHolder _itemholder = new();
+    public ItemHolder _itemholder = new();
     public ItemHolder ItemHolder { get { return _itemholder; } set { _itemholder = value; } }
 
     [JsonIgnore]
@@ -45,7 +45,6 @@ public class ItemData : IStorable, ISaveAble{
 
             this.GridPosition = saveData.gridPosition;
             this.ItemHolder = new ItemHolder(saveData.itemholderSaveData);
-            GD.Print(this.ItemHolder.Item, " new itemholder itemdata");
         }
     }
 

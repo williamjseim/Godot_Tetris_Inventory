@@ -27,8 +27,9 @@ public partial class ContainerWindow : BaseWindow
                     itemslot.GridPosition = new(x, y);
                     itemslot.Container = Container;
                     itemslot.ItemHolder = data.ItemHolder;
-                    itemslot.Size = data.ItemHolder.Item.ItemSize * InventoryManager.SlotSize;
+                    itemslot.Size = data.ItemHolder.Item.ItemSize * InventoryManager.slotSize;
                     itemslot.Position = Container.GetSlotPosition(new Vector2I(x,y));
+					itemslot.Rotated = data.ItemHolder.Rotated;
 					this.Container.Slots[x, y].Data.Itemslot = itemslot;
 					Container.AddChild(itemslot);
 				} 				
@@ -60,7 +61,7 @@ public partial class ContainerWindow : BaseWindow
 			_containerModifier = value;
 			Container.ContainerSize = value.ContainerSize;
 			Container.Slots = value.Grid;
-			this.Size += (value.ContainerSize - Vector2I.One) * InventoryManager.SlotSize;
+			this.Size += (value.ContainerSize - Vector2I.One) * InventoryManager.slotSize;
 		}
 	}
 

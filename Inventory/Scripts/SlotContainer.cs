@@ -16,7 +16,7 @@ public partial class SlotContainer : ContainerManager{
     public override void _Ready()
     {
         base._Ready();
-        CustomMinimumSize = ContainerSize*InventoryManager.SlotSize;
+        CustomMinimumSize = ContainerSize*InventoryManager.slotSize;
         UpdateMinimumSize();
         MouseEntered += MouseEnter;
         MouseExited += MouseExit;
@@ -43,27 +43,27 @@ public partial class SlotContainer : ContainerManager{
         {
             for (int x = 0; x < ContainerSize.X; x++)
             {
-                var rect = new Rect2(new Vector2I(x,y) * InventoryManager.SlotSize, Vector2.One * InventoryManager.SlotSize);
+                var rect = new Rect2(new Vector2I(x,y) * InventoryManager.slotSize, Vector2.One * InventoryManager.slotSize);
                 DrawRect(rect, Colors.White, false);
             }
         }
     }
 
     public Vector2I GetSlotIndex(Vector2 pos, Vector2I itemsize = new Vector2I()){
-        return ((Vector2I)pos/InventoryManager.SlotSize).Clamp(Vector2I.Zero, this.ContainerSize - itemsize);
+        return ((Vector2I)pos/InventoryManager.slotSize).Clamp(Vector2I.Zero, this.ContainerSize - itemsize);
     }
 
     public Vector2I GlobalToSlotIndex(Vector2 pos, Vector2I itemsize = new()){
         pos = (pos - this.GlobalPosition).Abs();
-        return ((Vector2I)pos/InventoryManager.SlotSize).Clamp(Vector2I.Zero, this.ContainerSize - itemsize);
+        return ((Vector2I)pos/InventoryManager.slotSize).Clamp(Vector2I.Zero, this.ContainerSize - itemsize);
     }
 
     public Vector2 GetSlotPosition(Vector2I index){
-        return index*InventoryManager.SlotSize;
+        return index*InventoryManager.slotSize;
     }
 
     public Vector2 GetGlobalSlotPosition(Vector2I index){
-        return (index*InventoryManager.SlotSize + this.GlobalPosition).Abs();
+        return (index*InventoryManager.slotSize + this.GlobalPosition).Abs();
     }
 
     public Vector2 MouseToSlotPosition(Vector2 mousePos, Vector2I itemsize = new Vector2I()){
@@ -125,7 +125,7 @@ public partial class SlotContainer : ContainerManager{
                     itemslot.GridPosition = new(x, y);
                     itemslot.Container = this;
                     itemslot.ItemHolder = item;
-                    itemslot.Size = item.Item.ItemSize * InventoryManager.SlotSize;
+                    itemslot.Size = item.Item.ItemSize * InventoryManager.slotSize;
                     itemslot.Position = this.GetSlotPosition(new Vector2I(x,y)); //new Vector2I(x, y) * InventoryManager.SlotSize;
                     PlaceItem(new(x,y), itemslot);
                     this.AddChild(itemslot);
@@ -148,7 +148,7 @@ public partial class SlotContainer : ContainerManager{
                     itemslot.GridPosition = new(x, y);
                     itemslot.Container = this;
                     itemslot.ItemHolder = itemData.ItemHolder;
-                    itemslot.Size = itemData.ItemHolder.ItemSize * InventoryManager.SlotSize;
+                    itemslot.Size = itemData.ItemHolder.ItemSize * InventoryManager.slotSize;
                     itemslot.Position = this.GetSlotPosition(new Vector2I(x,y));
                     itemData.Itemslot = itemslot;
                     this.Slots[x,y] = itemData;
@@ -184,9 +184,10 @@ public partial class SlotContainer : ContainerManager{
             }
             itemslot.Container.RemoveItem(itemslot);
             itemslot.GridPosition = truePos;
-            itemslot.Position = truePos * InventoryManager.SlotSize;
+            itemslot.Position = truePos * InventoryManager.slotSize;
             PlaceItem(truePos, itemslot);
             itemslot.Container = this;
+            itemslot.ZIndex = 0;
             return true;
         }
         return false;
@@ -259,7 +260,7 @@ public partial class SlotContainer : ContainerManager{
         }
         Vector2I index = GlobalToSlotIndex(itemslot.TruePosition, itemslot.ItemSize);
         this.HighlightPanel.Position = GetSlotPosition(index);
-        this.HighlightPanel.Size = itemslot.ItemSize * InventoryManager.SlotSize;
+        this.HighlightPanel.Size = itemslot.ItemSize * InventoryManager.slotSize;
         this.HighlightPanel.Fits = ItemFits(index, itemslot);
     }
 
