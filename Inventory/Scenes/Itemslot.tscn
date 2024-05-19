@@ -2,13 +2,15 @@
 
 [ext_resource type="Script" path="res://Inventory/Scripts/ItemSlot.cs" id="1_a0ce4"]
 
-[node name="Itemslot" type="Panel"]
+[node name="Itemslot" type="Panel" node_paths=PackedStringArray("amountLabel", "ModifierContainer")]
 texture_filter = 1
 custom_minimum_size = Vector2(64, 64)
 anchors_preset = -1
 offset_right = 64.0
 offset_bottom = 64.0
 script = ExtResource("1_a0ce4")
+amountLabel = NodePath("Label")
+ModifierContainer = NodePath("HBoxContainer")
 
 [node name="Label" type="Label" parent="."]
 layout_mode = 1

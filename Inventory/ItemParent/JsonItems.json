@@ -1,7 +1,6 @@
 [
   {
-    "$type": "GearItem, Tetris_Inventory",
-    "Gear": 0,
+    "$type": "EquipmentItem, Tetris_Inventory",
     "Name": "Basic rod",
     "Id": "BasicRod",
     "SpritePath": "res://Inventory/Sprites/FishingRod.tres",
@@ -10,7 +9,18 @@
       "$type": "Godot.Vector2I, GodotSharp",
       "X": 1,
       "Y": 4
-    }
+    },
+    "Modifiers":[
+      {
+        "$type": "ModableModifier, Tetris_Inventory",
+        "AttachableItemsType":[
+
+        ],
+        "AttachedItems":[
+          
+        ]
+      }
+    ]
   },
   {
     "$type": "GearItem, Tetris_Inventory",
@@ -18,6 +28,9 @@
     "Id": "Fish",
     "SpritePath": "res://Inventory/Sprites/Fish.tres",
     "StackSize": 999,
+    "_tags":[
+      "SmallFish"
+    ],
     "ItemSize": {
       "$type": "Godot.Vector2I, GodotSharp",
       "X": 2,
@@ -29,7 +42,7 @@
     "Name": "Tackle Box",
     "Id": "TackleBox",
     "SpritePath": "res://Inventory/Sprites/Storage.tres",
-    "StackSize": 999,
+    "StackSize": 1,
     "ItemSize": {
       "$type": "Godot.Vector2I, GodotSharp",
       "X": 2,
@@ -46,6 +59,7 @@
         "FilterWhiteList":[
         ],
         "FilterBlackList":[
+          "ContainerItem"
         ]
       }
     ]

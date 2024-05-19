@@ -1,14 +1,12 @@
 using Godot;
-using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 
 public partial class InventoryManager : ContainerManager, ISaveAble
 {
     [Export] PackedScene ContainerWindowScene;
-    public static PackedScene containerScene { get; protected set;} = ResourceLoader.Load<PackedScene>("res://Inventory/Scenes/Slot.tscn");
-    public static int SlotSize = 64;
+    public static PackedScene ItemslotScene { get; protected set;} = ResourceLoader.Load<PackedScene>("res://Inventory/Scenes/Itemslot.tscn");
+    public const int slotSize = 64; // change this if slot size changes
     [Export] SlotContainer slotContainer;
     SlotContainer _focusedContainer;
     BaseWindow FocusedWindow;
@@ -57,9 +55,9 @@ public partial class InventoryManager : ContainerManager, ISaveAble
         BaseWindow.Pressed += WindowPressed;
         BaseWindow.Released += WindowReleased;
         BaseWindow.CloseEvent += WindowClosed;
-        this.InsertItem(ItemDatabase.Instance.GetItem("BasicRod"), slotContainer);
-        this.InsertItem(ItemDatabase.Instance.GetItem("Fish"), slotContainer);
-        this.InsertItem(ItemDatabase.Instance.GetItem("TackleBox"), slotContainer);
+        // this.InsertItem(ItemDatabase.Instance.GetItem("BasicRod"), slotContainer);
+        // this.InsertItem(ItemDatabase.Instance.GetItem("Fish"), slotContainer);
+        // this.InsertItem(ItemDatabase.Instance.GetItem("TackleBox"), slotContainer);
     }
 
     public override void _Process(double delta)
@@ -77,7 +75,12 @@ public partial class InventoryManager : ContainerManager, ISaveAble
             if(OpenedWindows.Count > 0){
                 OpenedWindows.Last().Close();
                 OpenedWindows.RemoveLast();
+                FocusedWindow = null;
             }
+        }
+        if(Input.IsActionJustPressed("Debug")){
+            //this.Save();
+            this.Load(null);
         }
     }
 
@@ -86,6 +89,11 @@ public partial class InventoryManager : ContainerManager, ISaveAble
             OpenedWindows.Remove(window);
             OpenedWindows.AddLast(window);
         }
+        foreach (var item in OpenedWindows)
+        {
+            item.ZIndex = 0;
+        }
+        window.ZIndex = 2;
         FocusedWindow = window;
         windowPos = mouse.Position;
     }
@@ -107,6 +115,7 @@ public partial class InventoryManager : ContainerManager, ISaveAble
     public void InsertItem(BaseItem item, SlotContainer container){
         container.InsertItem(new ItemHolder(item, 1));
     }
+
     public new void MouseMotion(InputEventMouseMotion motion){
         if(focusedSlot != null){
             Dragging = true;
@@ -124,10 +133,12 @@ public partial class InventoryManager : ContainerManager, ISaveAble
 
     public void MousePressed(SlotContainer container, InputEventMouseButton button, ItemSlot itemslot){
         focusedSlot = itemslot;
+        itemslot.ZIndex = 5;
     }
 
     public void MouseReleased(SlotContainer container, InputEventMouse mouse){
         if(focusedSlot != null){
+            focusedSlot.ZIndex = 0;
             if(_focusedContainer == null){
                 this.ResetItemPosition(focusedSlot);
             }
@@ -159,12 +170,23 @@ public partial class InventoryManager : ContainerManager, ISaveAble
 
     public object Save()
     {
-        throw new NotImplementedException();
+        List<ItemData.SaveData> states = new();
+        foreach (var item in this.slotContainer.Slots)
+        {
+            if(item is ItemData data){
+                states.Add((ItemData.SaveData)data.Save());
+            }
+        }
+        SaveLoad.Save(states);
+        return states;
     }
 
     public void Load(object obj)
     {
-        throw new NotImplementedException();
+        var list = SaveLoad.Load<ItemData.SaveData>();
+        foreach (var item in list){
+            slotContainer.InsertItem(item);
+        }
     }
 
 }

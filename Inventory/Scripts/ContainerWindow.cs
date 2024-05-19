@@ -18,11 +18,21 @@ public partial class ContainerWindow : BaseWindow
 				this.ContainerModifier = containerModifier;
 			}
 		}
-		for (var X = 0; X < _containerModifier.ContainerSize.X; X++)
+		for (var y = 0; y < _containerModifier.ContainerSize.Y; y++)
 		{
-			if(_containerModifier.grid[X,0] != null){
-				Container.AddChild(_containerModifier.grid[X,0]);
-				_containerModifier.grid[X,0].Container = Container;
+			for (var x = 0; x < _containerModifier.ContainerSize.X; x++)
+			{
+				if(this.Container.Slots[x, y] is ItemData data){
+					ItemSlot itemslot = InventoryManager.ItemslotScene.Instantiate<ItemSlot>();
+                    itemslot.GridPosition = new(x, y);
+                    itemslot.Container = Container;
+                    itemslot.ItemHolder = data.ItemHolder;
+                    itemslot.Size = data.ItemHolder.Item.ItemSize * InventoryManager.slotSize;
+                    itemslot.Position = Container.GetSlotPosition(new Vector2I(x,y));
+					itemslot.Rotated = data.ItemHolder.Rotated;
+					this.Container.Slots[x, y].Data.Itemslot = itemslot;
+					Container.AddChild(itemslot);
+				} 				
 			}
 		}
     }
@@ -30,10 +40,14 @@ public partial class ContainerWindow : BaseWindow
     public override void Close()
     {
 		base.Close();
-		for (var X = 0; X < _containerModifier.ContainerSize.X; X++)
+		for (var y = 0; y < _containerModifier.ContainerSize.Y; y++)
 		{
-			if(_containerModifier.grid[X,0] != null){
-				Container.RemoveChild(_containerModifier.grid[X,0]);
+			for (var X = 0; X < _containerModifier.ContainerSize.X; X++)
+			{
+				if(this.Container.Slots[X, y] is ItemData data){
+					data.Itemslot?.QueueFree();
+					data.Itemslot = null;
+				} 				
 			}
 		}
 		this.QueueFree();
@@ -46,8 +60,8 @@ public partial class ContainerWindow : BaseWindow
 		set {
 			_containerModifier = value;
 			Container.ContainerSize = value.ContainerSize;
-			Container.Slots = value.grid;
-			this.Size += (value.ContainerSize - Vector2I.One) * InventoryManager.SlotSize;
+			Container.Slots = value.Grid;
+			this.Size += (value.ContainerSize - Vector2I.One) * InventoryManager.slotSize;
 		}
 	}
 

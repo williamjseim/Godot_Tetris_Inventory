@@ -32,8 +32,8 @@ public abstract partial class BaseWindow : Panel{
             if(mouse.ButtonMask == MouseButtonMask.Left && mouse.IsPressed()){
                 Pressed.Invoke(this, mouse);
             }
-            if(mouse.ButtonMask == MouseButtonMask.Left && mouse.IsReleased()){
-                Pressed.Invoke(this, mouse);
+            else if(mouse.ButtonIndex == MouseButton.Left && mouse.IsReleased()){
+                Released.Invoke(this, mouse);
             }
         }
     }

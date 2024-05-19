@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Godot;
 using Newtonsoft.Json;
 
@@ -10,14 +11,18 @@ public class BaseItem
   [JsonIgnore]
 	public virtual Texture2D ItemTexture { get;  set; } // item image
 	public virtual Texture2D RotatedItemTexture { get;  set; } // item image
-
+  
+  [JsonProperty(nameof(_tags))]
+  protected List<string> _tags;
+  [JsonIgnore]
+  public ReadOnlyCollection<string> Tags { get { return _tags.AsReadOnly(); } }
   public virtual List<ItemModifier> Modifiers { get; set; }
   public string SpritePath { set { 
       ItemTexture = ResourceLoader.Load<Texture2D>(value);
       Image image = this.ItemTexture.GetImage();
       image.Rotate90(ClockDirection.Clockwise);
       this.RotatedItemTexture = ImageTexture.CreateFromImage(image);
-    }}
+  }}
 
 	public virtual int StackSize { get;  set; } = 999; // max stack size
   public virtual Vector2I ItemSize { get;  set; } = new Vector2I(1,1);
